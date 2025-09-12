@@ -40,6 +40,11 @@ export interface JournalEntry {
 export interface UserData {
   onboarding: OnboardingData
   journals: JournalEntry[]
+  currentMood?: string
+  moodHistory: Array<{
+    mood: string
+    timestamp: string
+  }>
   preferences: {
     theme?: string
     notifications?: boolean
@@ -63,6 +68,8 @@ const getDefaultUserData = (): UserData => ({
     completed: false
   },
   journals: [],
+  currentMood: undefined,
+  moodHistory: [],
   preferences: {
     theme: 'system',
     notifications: true,
@@ -248,4 +255,19 @@ export const deleteJournalEntry = (id: string): void => {
 export const getJournalEntry = (id: string): JournalEntry | undefined => {
   const data = getUserData()
   return data.journals.find(entry => entry.id === id)
+}
+
+// Update current mood and add to history
+export const updateMood = (mood: string): void => {
+  const data = getUserData()
+  data.currentMood = mood
+  data.moodHistory.push({
+    mood,
+    timestamp: new Date().toISOString()
+  })
+  // Keep only last 30 mood entries to prevent excessive data growth
+  if (data.moodHistory.length > 30) {
+    data.moodHistory = data.moodHistory.slice(-30)
+  }
+  saveUserData(data)
 }

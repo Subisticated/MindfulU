@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sidebar } from "@/components/sidebar"
+import { Sidebar, MobileMenuButton } from "@/components/sidebar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -148,16 +148,21 @@ export default function BookingPage() {
   )
 
   return (
-    <div className="flex h-screen bg-background">
+    <div className="flex min-h-screen bg-background">
+      {/* Mobile Menu Button */}
+      <MobileMenuButton />
+      
+      {/* Sidebar */}
       <Sidebar />
-
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">
+      
+      {/* Main Content */}
+      <main className="flex-1 md:ml-64 pt-16 md:pt-0">
+        <div className="p-4 md:p-6">
           <div className="mb-6">
-            <h1 className="text-3xl font-bold text-balance">Book Counseling Session</h1>
+            <h1 className="text-2xl md:text-3xl font-bold text-balance">Book Counseling Session</h1>
             <p className="text-muted-foreground mt-2">
-              Schedule a confidential appointment with our professional counselors
-            </p>
+            Schedule a confidential appointment with our professional counselors
+          </p>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

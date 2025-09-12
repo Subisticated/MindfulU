@@ -13,6 +13,7 @@ import {
   updateJournalEntry,
   deleteJournalEntry,
   getJournalEntry,
+  updateMood,
   UserData, 
   OnboardingData, 
   AssessmentScores,
@@ -34,6 +35,7 @@ interface LocalStorageContextType {
   updateJournalEntry: (id: string, updates: Partial<Omit<JournalEntry, 'id' | 'createdAt'>>) => void
   deleteJournalEntry: (id: string) => void
   getJournalEntry: (id: string) => JournalEntry | undefined
+  updateMood: (mood: string) => void
 }
 
 const LocalStorageContext = createContext<LocalStorageContextType | undefined>(undefined)
@@ -144,7 +146,11 @@ export function LocalStorageProvider({ children }: { children: React.ReactNode }
       deleteJournalEntry(id)
       setData(getUserData()) // Refresh the data after deleting
     },
-    getJournalEntry
+    getJournalEntry,
+    updateMood: (mood) => {
+      updateMood(mood)
+      setData(getUserData()) // Refresh the data after updating mood
+    }
   }
 
   return (

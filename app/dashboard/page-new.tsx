@@ -72,57 +72,54 @@ export default function DashboardPage() {
               variants={containerVariants}
               initial="hidden"
               animate="visible"
-              className="space-y-4 sm:space-y-6"
+              className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3"
             >
-              {/* Top Row: Quick Actions */}
-              <div className="grid gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* Mood Tracker */}
-                <motion.div variants={cardVariants}>
-                  <MoodTrackerCard />
-                </motion.div>
-
-                {/* Journaling Card */}
-                <motion.div variants={cardVariants}>
-                  <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
-                    <Card className="hover:shadow-md transition-shadow">
-                      <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                          <BookOpen className="h-5 w-5 text-primary" />
-                          Quick Journal
-                        </CardTitle>
-                        <CardDescription>
-                          Capture your thoughts and reflect on your day
-                        </CardDescription>
-                      </CardHeader>
-                      <CardContent>
-                        <Button
-                          onClick={() => setIsJournalModalOpen(true)}
-                          className="w-full"
-                          size="sm"
-                        >
-                          <Plus className="h-4 w-4 mr-2" />
-                          New Entry
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  </motion.div>
-                </motion.div>
-
-                {/* Daily Tools */}
-                <motion.div variants={cardVariants}>
-                  <DailyToolsCard />
-                </motion.div>
-              </div>
-
-              {/* Wellness Insights - Full width horizontal layout for larger screens */}
+              {/* Mood Tracker */}
               <motion.div variants={cardVariants}>
-                <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.2 }}>
+                <MoodTrackerCard />
+              </motion.div>
+
+              {/* Journaling Card */}
+              <motion.div variants={cardVariants}>
+                <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Quick Journal
+                      </CardTitle>
+                      <CardDescription>
+                        Capture your thoughts and reflect on your day
+                      </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={() => setIsJournalModalOpen(true)}
+                        className="w-full"
+                        size="sm"
+                      >
+                        <Plus className="h-4 w-4 mr-2" />
+                        New Entry
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </motion.div>
+
+              {/* Wellness Insights */}
+              <motion.div variants={cardVariants} className="md:col-span-2 lg:col-span-1">
+                <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
                   <WellnessInsights />
                 </motion.div>
               </motion.div>
 
-              {/* AI Assistant - Full width */}
+              {/* Daily Tools */}
               <motion.div variants={cardVariants}>
+                <DailyToolsCard />
+              </motion.div>
+
+              {/* AI Assistant - spans full width on larger screens */}
+              <motion.div variants={cardVariants} className="md:col-span-2 lg:col-span-3">
                 <AIAssistantCard />
               </motion.div>
             </motion.div>

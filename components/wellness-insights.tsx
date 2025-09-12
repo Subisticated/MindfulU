@@ -179,111 +179,145 @@ export function WellnessInsights() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          {/* Overall Wellness Score */}
-          <div className="text-center p-6 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-            <div className="flex justify-center mb-3">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                <Heart className="h-8 w-8 text-primary" />
+          {/* Overall Score and Key Metrics - Horizontal Layout for Desktop */}
+          <div className="grid gap-4 md:grid-cols-4">
+            {/* Overall Wellness Score */}
+            <div className="text-center p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
+              <div className="flex justify-center mb-2">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
+                  <Heart className="h-6 w-6 text-primary" />
+                </div>
               </div>
+              <h3 className="text-lg font-bold mb-1">Overall Score</h3>
+              <div className="text-2xl font-bold text-primary mb-1">{overallWellnessScore}/100</div>
+              <Badge variant={riskLevel === 'severe' ? 'destructive' : riskLevel === 'moderate' ? 'secondary' : 'default'} className="text-xs">
+                {riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)} Risk
+              </Badge>
             </div>
-            <h3 className="text-2xl font-bold mb-2">Overall Wellness Score</h3>
-            <div className="text-4xl font-bold text-primary mb-2">{overallWellnessScore}/100</div>
-            <Badge variant={riskLevel === 'severe' ? 'destructive' : riskLevel === 'moderate' ? 'secondary' : 'default'}>
-              {riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)} Risk Level
-            </Badge>
-          </div>
 
-          {/* Individual Scores */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Assessment Breakdown</h3>
-            
-            <div className="grid gap-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <ScoreDisplay
-                  label="Depression (PHQ-9)"
-                  score={phq9Score}
-                  maxScore={27}
-                  color="bg-blue-500/10 text-blue-600"
-                  icon={Brain}
-                />
-                <Badge className={`${depressionInfo.bgColor} ${depressionInfo.color}`}>
+            {/* Depression Score */}
+            <div className="p-4 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
+                  <Brain className="h-4 w-4 text-blue-600" />
+                </div>
+                <span className="text-sm font-medium">Depression</span>
+              </div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-lg font-bold">{phq9Score}/27</span>
+                <Badge className={`${depressionInfo.bgColor} ${depressionInfo.color} text-xs`}>
                   {depressionInfo.level}
                 </Badge>
               </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <ScoreDisplay
-                  label="Anxiety (GAD-7)"
-                  score={gad7Score}
-                  maxScore={21}
-                  color="bg-purple-500/10 text-purple-600"
-                  icon={Zap}
-                />
-                <Badge className={`${anxietyInfo.bgColor} ${anxietyInfo.color}`}>
+              <Progress value={(phq9Score / 27) * 100} className="h-1.5" />
+            </div>
+
+            {/* Anxiety Score */}
+            <div className="p-4 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
+                  <Zap className="h-4 w-4 text-purple-600" />
+                </div>
+                <span className="text-sm font-medium">Anxiety</span>
+              </div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-lg font-bold">{gad7Score}/21</span>
+                <Badge className={`${anxietyInfo.bgColor} ${anxietyInfo.color} text-xs`}>
                   {anxietyInfo.level}
                 </Badge>
               </div>
-              
-              <div className="flex items-center justify-between p-3 rounded-lg bg-muted/30">
-                <ScoreDisplay
-                  label="Stress (PSS-10)"
-                  score={pss10Score}
-                  maxScore={40}
-                  color="bg-orange-500/10 text-orange-600"
-                  icon={AlertTriangle}
-                />
-                <Badge className={`${stressInfo.bgColor} ${stressInfo.color}`}>
+              <Progress value={(gad7Score / 21) * 100} className="h-1.5" />
+            </div>
+
+            {/* Stress Score */}
+            <div className="p-4 rounded-lg bg-muted/30">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/10">
+                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+                </div>
+                <span className="text-sm font-medium">Stress</span>
+              </div>
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-lg font-bold">{pss10Score}/40</span>
+                <Badge className={`${stressInfo.bgColor} ${stressInfo.color} text-xs`}>
                   {stressInfo.level}
                 </Badge>
               </div>
+              <Progress value={(pss10Score / 40) * 100} className="h-1.5" />
             </div>
           </div>
 
-          {/* Personalized Recommendations */}
-          <div className="space-y-4">
-            <h3 className="font-semibold text-lg">Personalized Recommendations</h3>
-            <div className="grid gap-3">
-              {recommendations.map((rec, index) => (
-                <div key={index} className={`p-4 rounded-lg border ${
-                  rec.priority === 'high' ? 'border-red-200 bg-red-50' : 
-                  rec.priority === 'medium' ? 'border-orange-200 bg-orange-50' : 
-                  'border-green-200 bg-green-50'
-                }`}>
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
-                        {rec.priority === 'high' && <AlertTriangle className="h-4 w-4 text-red-600" />}
-                        {rec.priority === 'medium' && <Calendar className="h-4 w-4 text-orange-600" />}
-                        {rec.priority === 'low' && <CheckCircle className="h-4 w-4 text-green-600" />}
-                        <h4 className="font-semibold text-sm">{rec.title}</h4>
+          {/* Recommendations and Actions - Horizontal for Desktop */}
+          <div className="grid gap-4 md:grid-cols-2">
+            {/* Top Recommendations */}
+            <div>
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                Priority Actions
+              </h3>
+              <div className="space-y-2">
+                {recommendations.slice(0, 2).map((rec, index) => (
+                  <div key={index} className={`p-3 rounded-lg border ${
+                    rec.priority === 'high' ? 'border-red-200 bg-red-50' : 
+                    rec.priority === 'medium' ? 'border-orange-200 bg-orange-50' : 
+                    'border-green-200 bg-green-50'
+                  }`}>
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          {rec.priority === 'high' && <AlertTriangle className="h-3 w-3 text-red-600" />}
+                          {rec.priority === 'medium' && <Calendar className="h-3 w-3 text-orange-600" />}
+                          {rec.priority === 'low' && <CheckCircle className="h-3 w-3 text-green-600" />}
+                          <h4 className="font-semibold text-sm">{rec.title}</h4>
+                        </div>
+                        <p className="text-xs text-muted-foreground">{rec.description}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground">{rec.description}</p>
+                      <Button size="sm" variant="outline" className="text-xs px-2 py-1" asChild>
+                        <Link href={rec.href}>{rec.action}</Link>
+                      </Button>
                     </div>
-                    <Button size="sm" variant="outline" asChild>
-                      <Link href={rec.href}>{rec.action}</Link>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div>
+              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                Quick Actions
+              </h3>
+              <div className="space-y-3">
+                <div className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    Track your progress by retaking the assessment in 2-4 weeks.
+                  </p>
+                  <div className="flex gap-2 flex-wrap">
+                    <Button size="sm" variant="outline" className="text-xs" asChild>
+                      <Link href="/onboarding">Retake Assessment</Link>
+                    </Button>
+                    <Button size="sm" className="text-xs" asChild>
+                      <Link href="/ai-assistant">Get AI Guidance</Link>
                     </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Next Steps */}
-          <div className="p-4 rounded-lg bg-muted/50 border-l-4 border-primary">
-            <h3 className="font-semibold text-sm mb-2 flex items-center gap-2">
-              <CheckCircle className="h-4 w-4" />
-              Next Steps
-            </h3>
-            <p className="text-sm text-muted-foreground mb-3">
-              Consider retaking this assessment in 2-4 weeks to track your progress and adjust your wellness strategy.
-            </p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" asChild>
-                <Link href="/onboarding">Retake Assessment</Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/ai-assistant">Get AI Guidance</Link>
-              </Button>
+                
+                {/* Additional quick tools */}
+                <div className="grid grid-cols-2 gap-2">
+                  <Button size="sm" variant="outline" className="text-xs justify-start" asChild>
+                    <Link href="/journal">
+                      <BookOpen className="h-3 w-3 mr-1" />
+                      Journal
+                    </Link>
+                  </Button>
+                  <Button size="sm" variant="outline" className="text-xs justify-start" asChild>
+                    <Link href="/meditation">
+                      <Activity className="h-3 w-3 mr-1" />
+                      Meditate
+                    </Link>
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </CardContent>

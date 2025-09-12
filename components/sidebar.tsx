@@ -4,7 +4,9 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { LayoutDashboard, Bot, Settings, Heart, BookOpen, Activity, Calendar } from "lucide-react"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { LayoutDashboard, Bot, Settings, Heart, BookOpen, Activity, Calendar, Menu, X } from "lucide-react"
+import { useState, useEffect } from "react"
 
 const sidebarItems = [
   {
@@ -39,13 +41,15 @@ const sidebarItems = [
   },
 ]
 
-export function Sidebar() {
+// Sidebar content component for reuse
+function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname()
 
   return (
-    <div className="flex h-full w-64 flex-col bg-sidebar border-r">
+    <div className="flex h-full w-full flex-col bg-sidebar">
+      {/* Header */}
       <div className="flex h-16 items-center border-b px-6">
-        <Link href="/" className="flex items-center space-x-2">
+        <Link href="/" className="flex items-center space-x-2" onClick={onItemClick}>
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-sidebar-primary">
             <Heart className="h-5 w-5 text-sidebar-primary-foreground" />
           </div>
@@ -53,6 +57,7 @@ export function Sidebar() {
         </Link>
       </div>
 
+      {/* Navigation */}
       <nav className="flex-1 space-y-2 p-4">
         {sidebarItems.map((item) => {
           const isActive =
@@ -71,7 +76,7 @@ export function Sidebar() {
               )}
               asChild
             >
-              <Link href={item.href}>
+              <Link href={item.href} onClick={onItemClick}>
                 <Icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </Link>
@@ -79,6 +84,39 @@ export function Sidebar() {
           )
         })}
       </nav>
+    </div>
+  )
+}
+
+// Mobile menu button component
+export function MobileMenuButton() {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <div className="md:hidden">
+      <Sheet open={isOpen} onOpenChange={setIsOpen}>
+        <SheetTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed top-4 left-4 z-50 bg-background/95 backdrop-blur-sm border shadow-lg hover:bg-accent"
+          >
+            <Menu className="h-5 w-5" />
+            <span className="sr-only">Toggle menu</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent side="left" className="w-64 p-0">
+          <SidebarContent onItemClick={() => setIsOpen(false)} />
+        </SheetContent>
+      </Sheet>
+    </div>
+  )
+}
+
+export function Sidebar() {
+  return (
+    <div className="hidden md:flex h-full w-64 flex-col bg-sidebar border-r">
+      <SidebarContent />
     </div>
   )
 }
