@@ -2,7 +2,7 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Questionnaire } from "@/components/Questionnaire"
+import { QuickQuestionnaire } from "@/components/Questionnaire/QuickQuestionnaire"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useLocalStorage } from "@/components/local-storage-provider"
@@ -171,7 +171,7 @@ export default function OnboardingPage() {
   const initialAnswers = data?.onboarding?.answers || {}
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
-      <Questionnaire 
+      <QuickQuestionnaire 
         onComplete={handleQuestionnaireComplete}
         initialData={{
           ...initialAnswers,

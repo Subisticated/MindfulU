@@ -290,11 +290,14 @@ export function WellnessInsights() {
               <div className="space-y-3">
                 <div className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary">
                   <p className="text-sm text-muted-foreground mb-2">
-                    Track your progress by retaking the assessment in 2-4 weeks.
+                    Track your progress by retaking assessments regularly.
                   </p>
                   <div className="flex gap-2 flex-wrap">
                     <Button size="sm" variant="outline" className="text-xs" asChild>
-                      <Link href="/onboarding">Retake Assessment</Link>
+                      <Link href="/onboarding">Quick Assessment</Link>
+                    </Button>
+                    <Button size="sm" variant="outline" className="text-xs" asChild>
+                      <Link href="/complete-assessment">Complete Assessment</Link>
                     </Button>
                     <Button size="sm" className="text-xs" asChild>
                       <Link href="/ai-assistant">Get AI Guidance</Link>
