@@ -15,7 +15,7 @@ export interface AssessmentScores {
   gad7Score: number
   pss10Score: number
   overallWellnessScore: number
-  riskLevel: 'minimal' | 'mild' | 'moderate' | 'severe'
+  riskLevel: 'excellent' | 'mild' | 'moderate' | 'challenging'
   completedAt: string
 }
 
@@ -182,7 +182,7 @@ export const isUserLoggedIn = (): boolean => {
 // Get user's wellness level for personalization
 export const getUserWellnessLevel = (): string => {
   const data = getUserData()
-  return data.onboarding.assessmentData?.riskLevel || 'unknown'
+  return data.onboarding.assessmentData?.riskLevel || 'excellent'
 }
 
 // Get personalized recommendations based on user data

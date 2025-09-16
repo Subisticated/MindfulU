@@ -148,12 +148,15 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
       }
       
       const assessmentData = {
-        // Map essential scores to full format for compatibility
-        phq9Score: Math.round((calculatedScores.mood || 0) * 27 / 3), // Scale to PHQ-9 range
-        gad7Score: Math.round((calculatedScores.anxiety || 0) * 21 / 3), // Scale to GAD-7 range
-        pss10Score: Math.round((calculatedScores.stress || 0) * 40 / 3), // Scale to PSS-10 range
+        // Map essential scores to clinical scale equivalents
+        // PHQ-9 range is 0-27, our mood score is 0-3, so scale proportionally
+        phq9Score: Math.round((calculatedScores.mood || 0) * 9), // Scale 0-3 to 0-27
+        // GAD-7 range is 0-21, our anxiety score is 0-3, so scale proportionally  
+        gad7Score: Math.round((calculatedScores.anxiety || 0) * 7), // Scale 0-3 to 0-21
+        // PSS-10 range is 0-40, our stress score is 0-3, so scale proportionally
+        pss10Score: Math.round((calculatedScores.stress || 0) * 13.33), // Scale 0-3 to 0-40
         overallWellnessScore: calculatedScores.overallWellnessScore,
-        riskLevel: calculatedScores.riskLevel as 'minimal' | 'mild' | 'moderate' | 'severe',
+        riskLevel: calculatedScores.riskLevel as 'excellent' | 'mild' | 'moderate' | 'challenging',
         completedAt: new Date().toISOString()
       }
       
@@ -178,18 +181,20 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
 
   const getRiskColor = (level: string) => {
     switch (level) {
-      case 'severe': return 'text-red-600'
-      case 'moderate': return 'text-orange-600'
-      case 'mild': return 'text-yellow-600'
+      case 'challenging': return 'text-amber-700'
+      case 'moderate': return 'text-blue-600'
+      case 'mild': return 'text-emerald-600'
+      case 'excellent': return 'text-green-600'
       default: return 'text-green-600'
     }
   }
 
   const getRiskBadgeVariant = (level: string) => {
     switch (level) {
-      case 'severe': return 'destructive'
-      case 'moderate': return 'secondary'
-      case 'mild': return 'outline'
+      case 'challenging': return 'secondary'
+      case 'moderate': return 'outline'
+      case 'mild': return 'default'
+      case 'excellent': return 'default'
       default: return 'default'
     }
   }
@@ -202,21 +207,21 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
         initial="hidden"
         animate="visible"
       >
-        <Card className="bg-gradient-to-br from-green-50 to-blue-50 border-green-200">
+        <Card className="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-blue-200 shadow-lg">
           <CardHeader className="text-center">
             <motion.div
-              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-100"
+              className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-blue-100 to-green-100"
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
             >
-              <CheckCircle className="h-8 w-8 text-green-600" />
+              <CheckCircle className="h-8 w-8 text-blue-600" />
             </motion.div>
-            <CardTitle className="text-2xl font-bold text-green-800">
-              Quick Assessment Complete!
+            <CardTitle className="text-2xl font-bold text-gray-800">
+              Thanks for Sharing!
             </CardTitle>
-            <p className="text-green-700 mt-2">
-              Thank you for sharing. We've created your initial wellness profile.
+            <p className="text-gray-600 mt-2">
+              We've created your wellness profile. This helps us personalize your experience.
             </p>
             <div className="flex items-center justify-center gap-2 mt-3 text-sm text-muted-foreground">
               <Clock className="h-4 w-4" />
@@ -225,67 +230,92 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Overall Score */}
-            <div className="text-center p-6 bg-white rounded-lg border">
+            <div className="text-center p-6 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
               <div className="flex justify-center mb-3">
-                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/20">
-                  <Heart className="h-8 w-8 text-primary" />
+                <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+                  <Heart className="h-8 w-8 text-blue-600" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold mb-2">Your Wellness Score</h3>
-              <div className="text-4xl font-bold text-primary mb-2">{scores?.overallWellnessScore || 0}/100</div>
-              <Badge variant={getRiskBadgeVariant(scores?.riskLevel || 'minimal')}>
-                {scores?.riskLevel?.charAt(0).toUpperCase() + scores?.riskLevel?.slice(1)} Level
+              <h3 className="text-xl font-semibold mb-2 text-gray-800">Your Wellness Check</h3>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{scores?.overallWellnessScore || 0}/100</div>
+              <Badge variant={getRiskBadgeVariant(scores?.riskLevel || 'excellent')} className="mb-2">
+                {scores?.riskDescription || 'Great wellness indicators'}
               </Badge>
+              <p className="text-sm text-gray-600 mt-2">
+                This gives us a starting point to support you better.
+              </p>
             </div>
 
-            {/* Key Insights */}
+            {/* Key Insights - Simplified and supportive */}
             <div className="grid gap-4 md:grid-cols-3">
-              <div className="p-4 bg-white rounded-lg border">
-                <h4 className="font-semibold text-sm mb-2">Mood</h4>
-                <div className="text-2xl font-bold mb-1">{scores?.mood || 0}/3</div>
-                <Badge className={`${scores?.moodLevel?.color || 'bg-green-100 text-green-800'} text-xs`}>
-                  {scores?.moodLevel?.level || 'Good'}
-                </Badge>
+              <div className="p-4 bg-gradient-to-br from-purple-50 to-pink-50 rounded-lg border border-purple-200">
+                <h4 className="font-medium text-sm mb-2 text-gray-700">Mood</h4>
+                <div className="text-lg font-semibold mb-1 text-purple-700">
+                  {scores?.mood === 0 ? "Good" : scores?.mood === 1 ? "Okay" : scores?.mood === 2 ? "Challenging" : "Difficult"}
+                </div>
+                <div className="w-full bg-purple-200 rounded-full h-2">
+                  <div 
+                    className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                    style={{width: `${100 - (scores?.mood || 0) * 33.33}%`}}
+                  ></div>
+                </div>
               </div>
-              <div className="p-4 bg-white rounded-lg border">
-                <h4 className="font-semibold text-sm mb-2">Anxiety</h4>
-                <div className="text-2xl font-bold mb-1">{scores?.anxiety || 0}/3</div>
-                <Badge className={`${scores?.anxietyLevel?.color || 'bg-green-100 text-green-800'} text-xs`}>
-                  {scores?.anxietyLevel?.level || 'Low'}
-                </Badge>
+              <div className="p-4 bg-gradient-to-br from-green-50 to-emerald-50 rounded-lg border border-green-200">
+                <h4 className="font-medium text-sm mb-2 text-gray-700">Anxiety</h4>
+                <div className="text-lg font-semibold mb-1 text-green-700">
+                  {scores?.anxiety === 0 ? "Calm" : scores?.anxiety === 1 ? "Some worry" : scores?.anxiety === 2 ? "Anxious" : "Very anxious"}
+                </div>
+                <div className="w-full bg-green-200 rounded-full h-2">
+                  <div 
+                    className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                    style={{width: `${100 - (scores?.anxiety || 0) * 33.33}%`}}
+                  ></div>
+                </div>
               </div>
-              <div className="p-4 bg-white rounded-lg border">
-                <h4 className="font-semibold text-sm mb-2">Stress</h4>
-                <div className="text-2xl font-bold mb-1">{scores?.stress || 0}/3</div>
-                <Badge className={`${scores?.stressLevel?.color || 'bg-green-100 text-green-800'} text-xs`}>
-                  {scores?.stressLevel?.level || 'Low'}
-                </Badge>
+              <div className="p-4 bg-gradient-to-br from-orange-50 to-yellow-50 rounded-lg border border-orange-200">
+                <h4 className="font-medium text-sm mb-2 text-gray-700">Stress</h4>
+                <div className="text-lg font-semibold mb-1 text-orange-700">
+                  {scores?.stress === 0 ? "Relaxed" : scores?.stress === 1 ? "Some stress" : scores?.stress === 2 ? "Stressed" : "Overwhelmed"}
+                </div>
+                <div className="w-full bg-orange-200 rounded-full h-2">
+                  <div 
+                    className="bg-orange-600 h-2 rounded-full transition-all duration-300" 
+                    style={{width: `${100 - (scores?.stress || 0) * 33.33}%`}}
+                  ></div>
+                </div>
               </div>
             </div>
 
-            {/* Quick Recommendations */}
+            {/* Supportive Recommendations */}
             <div className="space-y-3">
-              <h3 className="font-semibold text-lg">Your Quick Start Plan</h3>
-              {recommendations.slice(0, 3).map((rec, index) => (
-                <div key={index} className={`p-4 rounded-lg border ${
-                  rec.type === 'urgent' ? 'border-red-200 bg-red-50' : 
-                  rec.type === 'important' ? 'border-orange-200 bg-orange-50' : 
-                  'border-green-200 bg-green-50'
+              <h3 className="font-semibold text-lg text-gray-800">Your Personal Suggestions</h3>
+              <p className="text-sm text-gray-600 mb-4">
+                Based on what you've shared, here are some gentle suggestions to support your wellbeing:
+              </p>
+              {recommendations.slice(0, 2).map((rec, index) => (
+                <div key={index} className={`p-4 rounded-lg border-l-4 ${
+                  rec.type === 'supportive' ? 'border-l-blue-400 bg-blue-50' : 
+                  rec.type === 'encouraging' ? 'border-l-green-400 bg-green-50' : 
+                  rec.type === 'practical' ? 'border-l-purple-400 bg-purple-50' :
+                  rec.type === 'positive' ? 'border-l-emerald-400 bg-emerald-50' :
+                  'border-l-gray-400 bg-gray-50'
                 }`}>
                   <div className="flex items-start gap-3">
                     <div>
-                      {rec.type === 'urgent' && <AlertTriangle className="h-5 w-5 text-red-600 mt-0.5" />}
-                      {rec.type === 'important' && <Info className="h-5 w-5 text-orange-600 mt-0.5" />}
-                      {rec.type === 'helpful' && <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />}
+                      {rec.type === 'supportive' && <Heart className="h-5 w-5 text-blue-600 mt-0.5" />}
+                      {rec.type === 'encouraging' && <CheckCircle className="h-5 w-5 text-green-600 mt-0.5" />}
+                      {rec.type === 'practical' && <Info className="h-5 w-5 text-purple-600 mt-0.5" />}
+                      {rec.type === 'positive' && <Heart className="h-5 w-5 text-emerald-600 mt-0.5" />}
+                      {rec.type === 'gentle' && <Info className="h-5 w-5 text-gray-600 mt-0.5" />}
                     </div>
                     <div className="flex-1">
-                      <h4 className="font-semibold text-sm mb-1">{rec.title}</h4>
-                      <p className="text-sm text-muted-foreground mb-2">{rec.description}</p>
-                      <div className="flex flex-wrap gap-1">
-                        {rec.actions.slice(0, 2).map((action: string, i: number) => (
-                          <Badge key={i} variant="outline" className="text-xs">
+                      <h4 className="font-medium text-sm mb-1 text-gray-800">{rec.title}</h4>
+                      <p className="text-sm text-gray-600 mb-3">{rec.description}</p>
+                      <div className="flex flex-wrap gap-2">
+                        {rec.actions.slice(0, 3).map((action: string, i: number) => (
+                          <span key={i} className="text-xs px-2 py-1 bg-white bg-opacity-80 rounded-full border text-gray-700">
                             {action}
-                          </Badge>
+                          </span>
                         ))}
                       </div>
                     </div>
@@ -295,11 +325,14 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
             </div>
 
             {/* Next Steps */}
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-              <h3 className="font-semibold text-blue-800 mb-2">What's Next?</h3>
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4">
+              <h3 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
+                <Heart className="h-4 w-4" />
+                Your Wellness Journey Starts Now
+              </h3>
               <p className="text-blue-700 text-sm mb-3">
-                This was a quick assessment to get you started. For a more detailed analysis, 
-                you can take the complete assessment anytime from your dashboard.
+                This was just a quick check-in to get you started. Your dashboard has tools and resources 
+                personalized for you, and you can take a more detailed assessment anytime you'd like.
               </p>
               <div className="flex gap-2">
                 <Button 
@@ -307,7 +340,7 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700"
                 >
-                  Go to Dashboard
+                  Explore Your Dashboard
                 </Button>
               </div>
             </div>
@@ -352,31 +385,34 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
       />
 
       {/* Question Card */}
-      <Card className="mb-6">
-        <AnimatePresence mode="wait" custom={direction}>
-          <motion.div
-            key={currentQuestionIndex}
-            custom={direction}
-            variants={slideVariants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-          >
-            {currentQuestion && (
-              <QuestionCard
-                question={currentQuestion as any}
-                value={answers[currentQuestion.id]}
-                onChange={handleAnswerChange}
-                questionNumber={currentQuestionIndex + 1}
-                totalQuestions={allQuestions.length}
-                sectionTitle={currentQuestion.sectionTitle}
-                sectionDescription={currentQuestion.sectionDescription}
-              />
-            )}
-          </motion.div>
-        </AnimatePresence>
-      </Card>
+      <div className="mb-6 flex justify-center">
+        <div className="w-full max-w-2xl h-[650px]">
+          <AnimatePresence mode="wait" custom={direction}>
+            <motion.div
+              key={currentQuestionIndex}
+              custom={direction}
+              variants={slideVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ duration: 0.3, ease: "easeInOut" }}
+              className="h-full w-full"
+            >
+              {currentQuestion && (
+                <QuestionCard
+                  question={currentQuestion as any}
+                  value={answers[currentQuestion.id]}
+                  onChange={handleAnswerChange}
+                  questionNumber={currentQuestionIndex + 1}
+                  totalQuestions={allQuestions.length}
+                  sectionTitle={currentQuestion.sectionTitle}
+                  sectionDescription={currentQuestion.sectionDescription}
+                />
+              )}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
 
       {/* Navigation */}
       <div className="flex justify-between items-center">

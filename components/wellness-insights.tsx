@@ -61,22 +61,22 @@ function ScoreDisplay({ label, score, maxScore, color, icon: Icon }: ScoreDispla
 
 function getSeverityInfo(score: number, type: 'depression' | 'anxiety' | 'stress') {
   if (type === 'depression') {
-    // PHQ-9 scale
-    if (score <= 4) return { level: 'Minimal', color: 'text-green-600', bgColor: 'bg-green-500/10' }
-    if (score <= 9) return { level: 'Mild', color: 'text-yellow-600', bgColor: 'bg-yellow-500/10' }
-    if (score <= 14) return { level: 'Moderate', color: 'text-orange-600', bgColor: 'bg-orange-500/10' }
-    return { level: 'Severe', color: 'text-red-600', bgColor: 'bg-red-500/10' }
+    // PHQ-9 scale - more supportive language
+    if (score <= 4) return { level: 'Great', color: 'text-emerald-700', bgColor: 'bg-emerald-100', description: 'You\'re doing well' }
+    if (score <= 9) return { level: 'Good', color: 'text-blue-700', bgColor: 'bg-blue-100', description: 'Some areas to watch' }
+    if (score <= 14) return { level: 'Challenging', color: 'text-amber-700', bgColor: 'bg-amber-100', description: 'Let\'s work on this together' }
+    return { level: 'Difficult', color: 'text-orange-700', bgColor: 'bg-orange-100', description: 'Support is available' }
   } else if (type === 'anxiety') {
-    // GAD-7 scale
-    if (score <= 4) return { level: 'Minimal', color: 'text-green-600', bgColor: 'bg-green-500/10' }
-    if (score <= 9) return { level: 'Mild', color: 'text-yellow-600', bgColor: 'bg-yellow-500/10' }
-    if (score <= 14) return { level: 'Moderate', color: 'text-orange-600', bgColor: 'bg-orange-500/10' }
-    return { level: 'Severe', color: 'text-red-600', bgColor: 'bg-red-500/10' }
+    // GAD-7 scale - supportive language
+    if (score <= 4) return { level: 'Calm', color: 'text-emerald-700', bgColor: 'bg-emerald-100', description: 'Feeling relaxed' }
+    if (score <= 9) return { level: 'Some worry', color: 'text-blue-700', bgColor: 'bg-blue-100', description: 'Normal concerns' }
+    if (score <= 14) return { level: 'Anxious', color: 'text-amber-700', bgColor: 'bg-amber-100', description: 'Manageable with support' }
+    return { level: 'Very anxious', color: 'text-orange-700', bgColor: 'bg-orange-100', description: 'Help is here for you' }
   } else {
-    // PSS-10 scale
-    if (score <= 13) return { level: 'Low', color: 'text-green-600', bgColor: 'bg-green-500/10' }
-    if (score <= 26) return { level: 'Moderate', color: 'text-yellow-600', bgColor: 'bg-yellow-500/10' }
-    return { level: 'High', color: 'text-red-600', bgColor: 'bg-red-500/10' }
+    // PSS-10 scale - supportive language
+    if (score <= 13) return { level: 'Relaxed', color: 'text-emerald-700', bgColor: 'bg-emerald-100', description: 'Managing well' }
+    if (score <= 26) return { level: 'Some stress', color: 'text-amber-700', bgColor: 'bg-amber-100', description: 'Normal student stress' }
+    return { level: 'Stressed', color: 'text-orange-700', bgColor: 'bg-orange-100', description: 'Let\'s find relief' }
   }
 }
 
@@ -87,15 +87,25 @@ export function WellnessInsights() {
   
   if (!assessmentData) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Wellness Insights</CardTitle>
-          <CardDescription>Complete your assessment to see personalized insights</CardDescription>
+      <Card className="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-blue-200 shadow-lg">
+        <CardHeader className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
+              <Heart className="h-8 w-8 text-blue-600" />
+            </div>
+          </div>
+          <CardTitle className="text-gray-800">Start Your Wellness Journey</CardTitle>
+          <CardDescription className="text-gray-600">
+            Take a quick wellness check-in to get personalized insights and supportive recommendations
+          </CardDescription>
         </CardHeader>
-        <CardContent>
-          <Button asChild>
-            <Link href="/onboarding">Take Assessment</Link>
+        <CardContent className="text-center">
+          <Button asChild className="bg-blue-600 hover:bg-blue-700">
+            <Link href="/onboarding">Begin Your Check-in</Link>
           </Button>
+          <p className="text-sm text-gray-500 mt-3">
+            Takes just 2-3 minutes • Completely confidential
+          </p>
         </CardContent>
       </Card>
     )
@@ -120,41 +130,45 @@ export function WellnessInsights() {
     
     if (phq9Score >= 10) {
       recommendations.push({
-        title: "Consider Professional Support",
-        description: "Your depression screening suggests you might benefit from speaking with a counselor.",
-        action: "Find Counseling",
+        title: "Gentle Support Available",
+        description: "You might find it helpful to talk with someone who understands student life.",
+        action: "Find Support",
         href: "/resources/counseling",
-        priority: "high"
+        priority: "supportive",
+        icon: Heart
       })
     }
     
     if (gad7Score >= 10) {
       recommendations.push({
-        title: "Anxiety Management Tools",
-        description: "Try our guided breathing exercises and relaxation techniques.",
-        action: "Start Relaxation",
+        title: "Calm Your Mind",
+        description: "Try our guided breathing exercises designed specifically for students.",
+        action: "Start Breathing",
         href: "/meditation",
-        priority: "medium"
+        priority: "helpful",
+        icon: Activity
       })
     }
     
     if (pss10Score >= 20) {
       recommendations.push({
-        title: "Stress Reduction Strategies",
-        description: "Learn effective techniques to manage academic and personal stress.",
+        title: "Stress Relief Tools",
+        description: "Discover techniques that work for busy student schedules.",
         action: "Explore Tools",
         href: "/stress-management",
-        priority: "medium"
+        priority: "helpful",
+        icon: Target
       })
     }
     
-    // Add general wellness recommendations
+    // Add encouraging wellness recommendations
     recommendations.push({
-      title: "Daily Journaling",
-      description: "Regular reflection can help improve emotional awareness and processing.",
+      title: "Daily Reflection",
+      description: "A few minutes of journaling can make a big difference in how you feel.",
       action: "Start Writing",
       href: "/journal",
-      priority: "low"
+      priority: "encouraging",
+      icon: BookOpen
     })
 
     return recommendations
@@ -168,82 +182,97 @@ export function WellnessInsights() {
       initial="hidden"
       animate="visible"
     >
-      <Card>
+      <Card className="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-blue-200 shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Your Wellness Insights
+          <CardTitle className="flex items-center gap-2 text-gray-800">
+            <Heart className="h-5 w-5 text-blue-600" />
+            Your Wellness Journey
           </CardTitle>
-          <CardDescription>
-            Welcome {userProfile?.name}! Based on your assessment completed on {new Date(completedAt).toLocaleDateString()}
+          <CardDescription className="text-gray-600">
+            Hey {userProfile?.name}! Here's how you're doing since your check-in on {new Date(completedAt).toLocaleDateString()}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Overall Score and Key Metrics - Horizontal Layout for Desktop */}
           <div className="grid gap-4 md:grid-cols-4">
             {/* Overall Wellness Score */}
-            <div className="text-center p-4 rounded-lg bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20">
-              <div className="flex justify-center mb-2">
-                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-primary/20">
-                  <Heart className="h-6 w-6 text-primary" />
+            <div className="text-center p-6 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200">
+              <div className="flex justify-center mb-3">
+                <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100">
+                  <Heart className="h-6 w-6 text-blue-600" />
                 </div>
               </div>
-              <h3 className="text-lg font-bold mb-1">Overall Score</h3>
-              <div className="text-2xl font-bold text-primary mb-1">{overallWellnessScore}/100</div>
-              <Badge variant={riskLevel === 'severe' ? 'destructive' : riskLevel === 'moderate' ? 'secondary' : 'default'} className="text-xs">
-                {riskLevel.charAt(0).toUpperCase() + riskLevel.slice(1)} Risk
+              <h3 className="text-lg font-semibold mb-2 text-gray-800">Your Wellness</h3>
+              <div className="text-3xl font-bold text-blue-600 mb-2">{overallWellnessScore}/100</div>
+              <Badge variant={riskLevel === 'challenging' ? 'secondary' : riskLevel === 'moderate' ? 'outline' : 'default'} className="mb-2">
+                {riskLevel === 'excellent' ? 'Great wellness indicators' : 
+                 riskLevel === 'mild' ? 'Overall doing well' :
+                 riskLevel === 'moderate' ? 'Some areas need attention' :
+                 'You may be facing some challenges'}
               </Badge>
+              <p className="text-sm text-gray-600 mt-2">
+                This gives us a snapshot of how you're doing
+              </p>
             </div>
 
             {/* Depression Score */}
-            <div className="p-4 rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-blue-500/10">
-                  <Brain className="h-4 w-4 text-blue-600" />
+            <div className="p-4 rounded-lg bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-200">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-100">
+                  <Brain className="h-4 w-4 text-purple-600" />
                 </div>
-                <span className="text-sm font-medium">Depression</span>
+                <span className="text-sm font-medium text-gray-700">Mood</span>
               </div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-lg font-bold">{phq9Score}/27</span>
-                <Badge className={`${depressionInfo.bgColor} ${depressionInfo.color} text-xs`}>
-                  {depressionInfo.level}
-                </Badge>
+              <div className="text-lg font-semibold mb-1 text-purple-700">
+                {depressionInfo.level}
               </div>
-              <Progress value={(phq9Score / 27) * 100} className="h-1.5" />
+              <div className="w-full bg-purple-200 rounded-full h-2 mb-2">
+                <div 
+                  className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
+                  style={{width: `${100 - (phq9Score / 27) * 100}%`}}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-600">{depressionInfo.description}</p>
             </div>
 
             {/* Anxiety Score */}
-            <div className="p-4 rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-purple-500/10">
-                  <Zap className="h-4 w-4 text-purple-600" />
+            <div className="p-4 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-green-100">
+                  <Zap className="h-4 w-4 text-green-600" />
                 </div>
-                <span className="text-sm font-medium">Anxiety</span>
+                <span className="text-sm font-medium text-gray-700">Anxiety</span>
               </div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-lg font-bold">{gad7Score}/21</span>
-                <Badge className={`${anxietyInfo.bgColor} ${anxietyInfo.color} text-xs`}>
-                  {anxietyInfo.level}
-                </Badge>
+              <div className="text-lg font-semibold mb-1 text-green-700">
+                {anxietyInfo.level}
               </div>
-              <Progress value={(gad7Score / 21) * 100} className="h-1.5" />
+              <div className="w-full bg-green-200 rounded-full h-2 mb-2">
+                <div 
+                  className="bg-green-600 h-2 rounded-full transition-all duration-300" 
+                  style={{width: `${100 - (gad7Score / 21) * 100}%`}}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-600">{anxietyInfo.description}</p>
             </div>
 
             {/* Stress Score */}
-            <div className="p-4 rounded-lg bg-muted/30">
-              <div className="flex items-center gap-2 mb-2">
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-500/10">
-                  <AlertTriangle className="h-4 w-4 text-orange-600" />
+            <div className="p-4 rounded-lg bg-gradient-to-br from-orange-50 to-yellow-50 border border-orange-200">
+              <div className="flex items-center gap-2 mb-3">
+                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-orange-100">
+                  <Smile className="h-4 w-4 text-orange-600" />
                 </div>
-                <span className="text-sm font-medium">Stress</span>
+                <span className="text-sm font-medium text-gray-700">Stress</span>
               </div>
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-lg font-bold">{pss10Score}/40</span>
-                <Badge className={`${stressInfo.bgColor} ${stressInfo.color} text-xs`}>
-                  {stressInfo.level}
-                </Badge>
+              <div className="text-lg font-semibold mb-1 text-orange-700">
+                {stressInfo.level}
               </div>
-              <Progress value={(pss10Score / 40) * 100} className="h-1.5" />
+              <div className="w-full bg-orange-200 rounded-full h-2 mb-2">
+                <div 
+                  className="bg-orange-600 h-2 rounded-full transition-all duration-300" 
+                  style={{width: `${100 - (pss10Score / 40) * 100}%`}}
+                ></div>
+              </div>
+              <p className="text-xs text-gray-600">{stressInfo.description}</p>
             </div>
           </div>
 
@@ -251,30 +280,29 @@ export function WellnessInsights() {
           <div className="grid gap-4 md:grid-cols-2">
             {/* Top Recommendations */}
             <div>
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <Target className="h-5 w-5" />
-                Priority Actions
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-gray-800">
+                <Heart className="h-5 w-5 text-blue-600" />
+                Your Personal Suggestions
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {recommendations.slice(0, 2).map((rec, index) => (
-                  <div key={index} className={`p-3 rounded-lg border ${
-                    rec.priority === 'high' ? 'border-red-200 bg-red-50' : 
-                    rec.priority === 'medium' ? 'border-orange-200 bg-orange-50' : 
-                    'border-green-200 bg-green-50'
+                  <div key={index} className={`p-4 rounded-lg border-l-4 ${
+                    rec.priority === 'supportive' ? 'border-l-blue-400 bg-blue-50' : 
+                    rec.priority === 'helpful' ? 'border-l-purple-400 bg-purple-50' : 
+                    rec.priority === 'encouraging' ? 'border-l-green-400 bg-green-50' :
+                    'border-l-gray-400 bg-gray-50'
                   }`}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
-                          {rec.priority === 'high' && <AlertTriangle className="h-3 w-3 text-red-600" />}
-                          {rec.priority === 'medium' && <Calendar className="h-3 w-3 text-orange-600" />}
-                          {rec.priority === 'low' && <CheckCircle className="h-3 w-3 text-green-600" />}
-                          <h4 className="font-semibold text-sm">{rec.title}</h4>
-                        </div>
-                        <p className="text-xs text-muted-foreground">{rec.description}</p>
+                    <div className="flex items-start gap-3">
+                      <div className="flex-shrink-0 mt-0.5">
+                        {rec.icon && <rec.icon className="h-5 w-5 text-current opacity-70" />}
                       </div>
-                      <Button size="sm" variant="outline" className="text-xs px-2 py-1" asChild>
-                        <Link href={rec.href}>{rec.action}</Link>
-                      </Button>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-sm mb-1 text-gray-800">{rec.title}</h4>
+                        <p className="text-sm text-gray-600 mb-3">{rec.description}</p>
+                        <Button size="sm" variant="outline" className="text-xs" asChild>
+                          <Link href={rec.href}>{rec.action}</Link>
+                        </Button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -283,40 +311,40 @@ export function WellnessInsights() {
 
             {/* Quick Actions */}
             <div>
-              <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-                <CheckCircle className="h-5 w-5" />
-                Quick Actions
+              <h3 className="font-semibold text-lg mb-4 flex items-center gap-2 text-gray-800">
+                <Target className="h-5 w-5 text-purple-600" />
+                Take Action Today
               </h3>
-              <div className="space-y-3">
-                <div className="p-3 rounded-lg bg-muted/50 border-l-4 border-primary">
-                  <p className="text-sm text-muted-foreground mb-2">
-                    Track your progress by retaking assessments regularly.
+              <div className="space-y-4">
+                <div className="p-4 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <p className="text-sm text-blue-700 mb-3">
+                    Regular check-ins help you track your progress and celebrate your growth.
                   </p>
                   <div className="flex gap-2 flex-wrap">
-                    <Button size="sm" variant="outline" className="text-xs" asChild>
-                      <Link href="/onboarding">Quick Assessment</Link>
+                    <Button size="sm" variant="outline" className="text-xs border-blue-300 hover:bg-blue-100" asChild>
+                      <Link href="/onboarding">Quick Check-in</Link>
                     </Button>
-                    <Button size="sm" variant="outline" className="text-xs" asChild>
-                      <Link href="/complete-assessment">Complete Assessment</Link>
+                    <Button size="sm" variant="outline" className="text-xs border-blue-300 hover:bg-blue-100" asChild>
+                      <Link href="/complete-assessment">Full Assessment</Link>
                     </Button>
-                    <Button size="sm" className="text-xs" asChild>
-                      <Link href="/ai-assistant">Get AI Guidance</Link>
+                    <Button size="sm" className="text-xs bg-blue-600 hover:bg-blue-700" asChild>
+                      <Link href="/ai-assistant">Chat with AI Buddy</Link>
                     </Button>
                   </div>
                 </div>
                 
                 {/* Additional quick tools */}
-                <div className="grid grid-cols-2 gap-2">
-                  <Button size="sm" variant="outline" className="text-xs justify-start" asChild>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button size="sm" variant="outline" className="text-xs justify-start py-3 h-auto flex-col gap-1 border-purple-200 hover:bg-purple-50" asChild>
                     <Link href="/journal">
-                      <BookOpen className="h-3 w-3 mr-1" />
-                      Journal
+                      <BookOpen className="h-4 w-4 text-purple-600" />
+                      <span>Write & Reflect</span>
                     </Link>
                   </Button>
-                  <Button size="sm" variant="outline" className="text-xs justify-start" asChild>
+                  <Button size="sm" variant="outline" className="text-xs justify-start py-3 h-auto flex-col gap-1 border-green-200 hover:bg-green-50" asChild>
                     <Link href="/meditation">
-                      <Activity className="h-3 w-3 mr-1" />
-                      Meditate
+                      <Activity className="h-4 w-4 text-green-600" />
+                      <span>Breathe & Relax</span>
                     </Link>
                   </Button>
                 </div>

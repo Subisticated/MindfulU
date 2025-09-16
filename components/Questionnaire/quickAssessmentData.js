@@ -64,15 +64,19 @@ export const quickAssessmentSets = {
       },
       {
         id: "essential_concern",
-        text: "What is your biggest wellness concern right now?",
+        text: "As a student, you may face various challenges that can impact your overall wellness and academic performance. Considering your current situation, personal circumstances, daily routines, and the various pressures you experience, what would you identify as your most significant wellness concern or area where you feel you need the most support right now?",
         type: "likert",
         options: [
-          { value: 0, label: "Academic stress" },
-          { value: 1, label: "Social anxiety" },
-          { value: 2, label: "Sleep problems" },
-          { value: 3, label: "Feeling overwhelmed" },
-          { value: 4, label: "Loneliness" },
-          { value: 5, label: "Time management" }
+          { value: 0, label: "Academic stress and pressure from coursework, exams, and deadlines" },
+          { value: 1, label: "Social anxiety and difficulty connecting with peers or participating in group activities" },
+          { value: 2, label: "Sleep problems including difficulty falling asleep, staying asleep, or poor sleep quality" },
+          { value: 3, label: "Feeling overwhelmed by responsibilities and struggling to manage everything" },
+          { value: 4, label: "Loneliness and feelings of isolation from friends, family, or community" },
+          { value: 5, label: "Time management challenges and difficulty balancing studies with personal life" },
+          { value: 6, label: "Financial stress and concerns about money, expenses, or student loans" },
+          { value: 7, label: "Mental health concerns including depression, anxiety, or mood changes" },
+          { value: 8, label: "Physical health issues or concerns about maintaining healthy habits" },
+          { value: 9, label: "Family or relationship problems affecting your well-being" }
         ]
       }
     ]
@@ -83,38 +87,44 @@ export const quickAssessmentSets = {
 export const calculateQuickScores = (answers) => {
   const scores = {}
   
-  // Core wellness indicators
+  // Core wellness indicators (all on 0-3 scale)
   const moodScore = answers.essential_mood || 0
   const anxietyScore = answers.essential_anxiety || 0
   const stressScore = answers.essential_stress || 0
   const sleepScore = answers.essential_sleep || 0
   const supportScore = answers.essential_support || 0
   
-  // Calculate individual component scores
-  scores.mood = moodScore * 3 // Scale to 0-9
-  scores.anxiety = anxietyScore * 3 // Scale to 0-9
-  scores.stress = stressScore * 4 // Scale to 0-12
-  scores.sleep = sleepScore * 2 // Scale to 0-6
-  scores.support = supportScore * 2 // Scale to 0-6
+  // Keep scores in original 0-3 range for consistency
+  scores.mood = moodScore
+  scores.anxiety = anxietyScore
+  scores.stress = stressScore
+  scores.sleep = sleepScore
+  scores.support = supportScore
   
-  // Total score out of 42
+  // Total score out of 15 (5 questions × 3 max each)
   const totalScore = scores.mood + scores.anxiety + scores.stress + scores.sleep + scores.support
   
   // Calculate overall wellness score (0-100, higher is better)
-  scores.overallWellnessScore = Math.max(0, Math.round(100 - (totalScore / 42) * 100))
+  // Invert the score since higher raw scores indicate worse wellness
+  scores.overallWellnessScore = Math.max(0, Math.round(100 - (totalScore / 15) * 100))
   
-  // Determine risk level based on total score
-  if (totalScore >= 30) {
-    scores.riskLevel = 'severe'
-  } else if (totalScore >= 20) {
+  // Determine wellness level with student-friendly language (out of 15)
+  // More forgiving thresholds to reduce overwhelming students
+  if (totalScore >= 11) {
+    scores.riskLevel = 'challenging'
+    scores.riskDescription = 'You may be facing some challenges'
+  } else if (totalScore >= 7) {
     scores.riskLevel = 'moderate'
-  } else if (totalScore >= 10) {
+    scores.riskDescription = 'Some areas need attention'
+  } else if (totalScore >= 3) {
     scores.riskLevel = 'mild'
+    scores.riskDescription = 'Overall doing well'
   } else {
-    scores.riskLevel = 'minimal'
+    scores.riskLevel = 'excellent'
+    scores.riskDescription = 'Great wellness indicators'
   }
   
-  // Store priority concern
+  // Store priority concern (this is not a wellness score, just an identifier)
   scores.priorityConcern = answers.essential_concern || 0
   
   return scores
@@ -134,91 +144,106 @@ const getQuickScoreLevel = (score, interpretation) => {
 export const generateQuickRecommendations = (scores, answers) => {
   const recommendations = []
   
-  // High-priority recommendations based on risk level
-  if (scores.riskLevel === 'severe' || scores.riskLevel === 'moderate') {
+  // Supportive recommendations based on wellness level
+  if (scores.riskLevel === 'challenging') {
     recommendations.push({
-      type: 'urgent',
-      title: 'Consider Professional Support',
-      description: 'Your responses suggest you might benefit from speaking with a counselor or trusted person.',
-      actions: ['Contact campus counseling', 'Speak with a trusted friend', 'Call support hotline']
+      type: 'supportive',
+      title: 'You\'re Not Alone',
+      description: 'It sounds like you\'re going through a tough time. Remember that seeking support is a sign of strength.',
+      actions: ['Talk to someone you trust', 'Campus wellness resources', 'Self-care activities']
+    })
+  } else if (scores.riskLevel === 'moderate') {
+    recommendations.push({
+      type: 'encouraging',
+      title: 'Small Steps Forward',
+      description: 'You\'re managing well overall. Let\'s focus on some areas that could use a little attention.',
+      actions: ['Daily check-ins', 'Stress management', 'Healthy routines']
     })
   }
   
   // Targeted recommendations based on priority concern
-  const concernLabels = ['Academic stress', 'Social anxiety', 'Sleep problems', 'Feeling overwhelmed', 'Loneliness', 'Time management']
   const priorityConcern = answers.essential_concern
   
   if (priorityConcern === 0) { // Academic stress
     recommendations.push({
-      type: 'important',
-      title: 'Academic Stress Management',
-      description: 'Break large tasks into smaller steps and use time-blocking techniques.',
-      actions: ['Study planning tools', 'Pomodoro technique', 'Academic support services']
+      type: 'practical',
+      title: 'Academic Balance',
+      description: 'Academic challenges are normal. Let\'s find strategies that work for you.',
+      actions: ['Study planning', 'Break tasks down', 'Academic support']
     })
   } else if (priorityConcern === 1) { // Social anxiety
     recommendations.push({
-      type: 'important',
-      title: 'Social Confidence Building',
-      description: 'Start with small social interactions and practice self-compassion.',
-      actions: ['Mindfulness exercises', 'Campus social groups', 'Social skills practice']
+      type: 'practical',
+      title: 'Social Confidence',
+      description: 'Building social connections takes time. Start small and be patient with yourself.',
+      actions: ['Small interactions', 'Campus groups', 'Practice self-compassion']
     })
   } else if (priorityConcern === 2) { // Sleep problems
     recommendations.push({
-      type: 'important',
-      title: 'Sleep Hygiene Improvement',
-      description: 'Good sleep is foundational to mental wellness and academic performance.',
-      actions: ['Consistent sleep schedule', 'Screen time limits', 'Relaxation techniques']
+      type: 'practical',
+      title: 'Better Sleep',
+      description: 'Good sleep is your foundation for everything else. Let\'s improve your rest.',
+      actions: ['Sleep routine', 'Screen time limits', 'Relaxation methods']
     })
   } else if (priorityConcern === 3) { // Feeling overwhelmed
     recommendations.push({
-      type: 'important',
-      title: 'Overwhelm Management',
-      description: 'Learn to prioritize tasks and set healthy boundaries.',
-      actions: ['Task prioritization', 'Say no techniques', 'Stress reduction methods']
+      type: 'practical',
+      title: 'Managing Overwhelm',
+      description: 'Feeling overwhelmed is common in student life. Let\'s break things down.',
+      actions: ['Priority setting', 'Time management', 'Breathing exercises']
     })
   } else if (priorityConcern === 4) { // Loneliness
     recommendations.push({
-      type: 'important',
+      type: 'practical',
       title: 'Building Connections',
-      description: 'Social connections are vital for mental health and wellbeing.',
-      actions: ['Join campus clubs', 'Study groups', 'Community activities']
+      description: 'Making meaningful connections takes time. You\'re taking a positive step.',
+      actions: ['Campus activities', 'Study groups', 'Volunteer opportunities']
     })
   } else if (priorityConcern === 5) { // Time management
     recommendations.push({
-      type: 'important',
-      title: 'Time Management Skills',
-      description: 'Effective time management reduces stress and improves performance.',
-      actions: ['Calendar blocking', 'Priority matrix', 'Time tracking']
+      type: 'practical',
+      title: 'Time Management',
+      description: 'Good time management reduces stress and creates space for what matters.',
+      actions: ['Planning tools', 'Priority methods', 'Time blocking']
     })
   }
   
-  // Support system recommendation if needed
+  // Gentle suggestions based on specific areas
   if (answers.essential_support >= 2) {
     recommendations.push({
-      type: 'helpful',
-      title: 'Build Your Support Network',
-      description: 'Having people to talk to is crucial for mental health.',
-      actions: ['Reach out to family', 'Connect with classmates', 'Join support groups']
+      type: 'gentle',
+      title: 'Building Your Support Circle',
+      description: 'Having people to talk to makes a big difference in how we feel.',
+      actions: ['Reach out to one person', 'Join a community', 'Consider counseling']
     })
   }
   
   // Sleep recommendation if needed
   if (answers.essential_sleep >= 2) {
     recommendations.push({
-      type: 'helpful',
-      title: 'Improve Sleep Quality',
-      description: 'Better sleep improves mood, focus, and overall wellbeing.',
-      actions: ['Sleep hygiene tips', 'Bedtime routine', 'Limit caffeine']
+      type: 'gentle',
+      title: 'Sleep Foundation',
+      description: 'Better sleep often leads to better days and improved mood.',
+      actions: ['Evening routine', 'Phone-free bedroom', 'Regular bedtime']
     })
   }
   
-  // Always include a general wellness tip
-  recommendations.push({
-    type: 'helpful',
-    title: 'Daily Wellness Habits',
-    description: 'Small consistent actions can make a significant difference in your wellbeing.',
-    actions: ['5-minute meditation', 'Daily walk', 'Gratitude practice']
-  })
+  // Always include a positive, actionable tip
+  if (scores.riskLevel === 'excellent' || scores.riskLevel === 'mild') {
+    recommendations.push({
+      type: 'positive',
+      title: 'Keep Up the Great Work!',
+      description: 'You\'re doing well! Here are some ways to maintain your positive momentum.',
+      actions: ['Daily gratitude', 'Stay active', 'Connect with others']
+    })
+  } else {
+    recommendations.push({
+      type: 'gentle',
+      title: 'Small Daily Steps',
+      description: 'Remember, small consistent actions can lead to meaningful improvements.',
+      actions: ['5-minute walks', 'Deep breathing', 'One good thing daily']
+    })
+  }
   
   return recommendations
 }
