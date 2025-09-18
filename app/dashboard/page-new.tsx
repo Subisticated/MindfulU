@@ -9,7 +9,7 @@ import { MoodTrackerCard } from "@/components/mood-tracker-card"
 import { DailyToolsCard } from "@/components/daily-tools-card"
 import { AIAssistantCard } from "@/components/ai-assistant-card"
 import { WellnessInsights } from "@/components/wellness-insights"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { BookOpen, Plus, Brain } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -34,9 +34,9 @@ const cardVariants = {
 
 export default function DashboardPage() {
   const [isJournalModalOpen, setIsJournalModalOpen] = useState(false)
-  const { data, isLoggedIn } = useLocalStorage()
-  const userName = data?.onboarding?.userProfile?.name || "Student"
-  const hasAssessmentData = data?.onboarding?.completed && data?.onboarding?.assessmentData
+  const { data, isLoggedIn } = useMongoose()
+  const userName = data?.name || "Student"
+  const hasAssessmentData = data?.onboardingCompleted && (data?.assessments?.length ?? 0) > 0
 
   return (
     <div className="flex h-screen bg-background">

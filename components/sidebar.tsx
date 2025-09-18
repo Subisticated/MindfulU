@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, Bot, Settings, Heart, BookOpen, Activity, Calendar, Menu, X } from "lucide-react"
 import { useState, useEffect } from "react"
+import { useRoutePreloader } from "@/lib/route-preloader"
 
 const sidebarItems = [
   {
@@ -44,6 +45,12 @@ const sidebarItems = [
 // Sidebar content component for reuse
 function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
   const pathname = usePathname()
+  const { preloadRoute } = useRoutePreloader()
+
+  const handleMouseEnter = (href: string) => {
+    // Preload route on hover with small delay
+    setTimeout(() => preloadRoute(href), 100)
+  }
 
   return (
     <div className="flex h-full w-full flex-col bg-sidebar">
@@ -76,7 +83,12 @@ function SidebarContent({ onItemClick }: { onItemClick?: () => void }) {
               )}
               asChild
             >
-              <Link href={item.href} onClick={onItemClick}>
+              <Link 
+                href={item.href} 
+                onClick={onItemClick}
+                onMouseEnter={() => handleMouseEnter(item.href)}
+                onFocus={() => handleMouseEnter(item.href)}
+              >
                 <Icon className="h-4 w-4" />
                 <span>{item.title}</span>
               </Link>

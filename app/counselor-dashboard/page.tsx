@@ -62,7 +62,7 @@ export default function CounselorDashboard() {
     }
   }, [])
 
-  const updateAppointmentStatus = (appointmentId: string, status: string) => {
+  const updateAppointmentStatus = (appointmentId: string, status: "pending" | "confirmed" | "completed" | "cancelled") => {
     const updatedAppointments = appointments.map((apt) => (apt.id === appointmentId ? { ...apt, status } : apt))
     setAppointments(updatedAppointments)
     localStorage.setItem("appointments", JSON.stringify(updatedAppointments))

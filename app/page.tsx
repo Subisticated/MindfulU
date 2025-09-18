@@ -2,13 +2,14 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { Navbar } from "@/components/navbar"
 import { Button } from "@/components/ui/button"
 import { Card, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Heart, BookOpen, Brain, Sparkles } from "lucide-react"
 import Link from "next/link"
 import { motion } from "framer-motion"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 
 const containerVariants = {
   hidden: { opacity: 0 },
@@ -51,35 +52,32 @@ const cardVariants = {
 }
 
 export default function LandingPage() {
-  const { data, isLoggedIn } = useLocalStorage()
+  const { data: session, status } = useSession()
+  const { data, isLoggedIn } = useMongoose()
   const router = useRouter()
 
-  // Redirect logged-in users to dashboard
+  // Redirect authenticated users - let UserFlowProvider handle routing
   useEffect(() => {
-    if (isLoggedIn) {
-      router.push('/dashboard')
-    }
-  }, [isLoggedIn, router])
+    // Don't redirect if user is already being handled by UserFlowProvider
+    // The UserFlowProvider will handle the smart routing logic
+  }, [session, status, router])
 
-  // Show loading or nothing while redirecting
-  if (isLoggedIn) {
+  // Show loading while checking authentication
+  if (status === "loading") {
     return (
       <div className="min-h-screen bg-gradient-to-br from-background via-card to-background flex items-center justify-center">
         <div className="text-center">
-          <motion.div
-            className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 ring-1 ring-primary/20 mx-auto mb-4"
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-          >
-            <Heart className="h-8 w-8 text-primary" />
-          </motion.div>
-          <p className="text-muted-foreground">Redirecting to your dashboard...</p>
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Loading...</p>
         </div>
       </div>
     )
   }
 
-  const getStartedPath = "/onboarding"
+  // Show normal landing page for unauthenticated users
+  // UserFlowProvider will handle authenticated user routing
+
+  const getStartedPath = "/auth/signup"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-card to-background">

@@ -2,16 +2,16 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { Questionnaire } from "@/components/Questionnaire/Questionnaire"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { ArrowLeft, Clock, Target } from "lucide-react"
 import { motion } from "framer-motion"
+import { LazyWrapper, PageLoadingSkeleton, LazyQuestionnaire } from "@/lib/lazy-components"
 
 export default function CompleteAssessmentPage() {
   const router = useRouter()
-  const { data } = useLocalStorage()
+  const { data } = useMongoose()
   const [showInfo, setShowInfo] = useState(true)
 
   const handleStartCompleteAssessment = () => {
@@ -29,11 +29,11 @@ export default function CompleteAssessmentPage() {
 
   if (showInfo) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-2 sm:p-4 md:p-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="max-w-2xl mx-auto"
+          className="max-w-full sm:max-w-2xl mx-auto w-full"
         >
           <Card className="border-0 shadow-xl">
             <CardHeader className="text-center">
@@ -132,11 +132,13 @@ export default function CompleteAssessmentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
-      <Questionnaire 
-        onComplete={handleQuestionnaireComplete}
-        initialData={data?.onboarding?.answers || {}}
-      />
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-2 sm:p-4 md:p-6">
+      <LazyWrapper fallback={<PageLoadingSkeleton />}>
+        <LazyQuestionnaire 
+          onComplete={handleQuestionnaireComplete}
+          initialData={data?.assessments?.[0]?.answers || {}}
+        />
+      </LazyWrapper>
     </div>
   )
 }

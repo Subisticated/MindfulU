@@ -1,234 +1,239 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Sidebar } from "@/components/sidebar"
+import { PageLayout } from "@/components/page-layout"
+import { EnhancedCard } from "@/components/enhanced-card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
-import { Separator } from "@/components/ui/separator"
 import { ThemeToggle } from "@/components/theme-toggle"
+import { LanguageSelector } from "@/components/language-selector"
+import { useTranslation } from "@/components/translation-provider"
 import { LogoutCard } from "@/components/logout-card"
-import { User, Bell, Palette, Bot, Save, Sparkles } from "lucide-react"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { User, Bell, Palette, Bot, Save, Sparkles, Settings, Languages } from "lucide-react"
+import { useMongoose } from "@/components/mongoose-provider"
+import { AnimatedPage, AnimatedCard, AnimatedButton, AnimatedWrapper } from "@/components/ui/animated-components"
+
+interface Preferences {
+  theme: string
+  notifications: boolean
+  emailUpdates: boolean
+  privacy: string
+}
 
 export default function SettingsPage() {
-  const { data, updateData, logout } = useLocalStorage()
-  const [profile, setProfile] = useState(data?.onboarding?.userProfile || { 
-    name: '', 
-    email: '', 
-    university: '', 
-    completedAt: new Date().toISOString() 
+  const { data } = useMongoose()
+  const { t } = useTranslation()
+  const [profile, setProfile] = useState({ 
+    name: data?.name || '', 
+    email: data?.email || '', 
+    university: data?.university || ''
   })
-  const [preferences, setPreferences] = useState(data?.preferences || { theme: 'system', notifications: true, privacy: 'private' })
+  const [preferences, setPreferences] = useState<Preferences>({ 
+    theme: 'system', 
+    notifications: true, 
+    emailUpdates: false,
+    privacy: 'private' 
+  })
   const [isSaved, setIsSaved] = useState(false)
 
   useEffect(() => {
-    setProfile(data?.onboarding?.userProfile || { 
-      name: '', 
-      email: '', 
-      university: '', 
-      completedAt: new Date().toISOString() 
+    setProfile({ 
+      name: data?.name || '', 
+      email: data?.email || '', 
+      university: data?.university || ''
     })
-    setPreferences(data?.preferences || { theme: 'system', notifications: true, privacy: 'private' })
-  }, [data?.onboarding?.userProfile, data?.preferences])
+  }, [data?.name, data?.email, data?.university])
 
   const handleProfileChange = (field: string, value: string) => {
     setProfile((prev) => ({ ...prev, [field]: value }))
   }
 
   const handleSave = () => {
-    // Update the user data with new profile and preferences
-    if (data) {
-      updateData({
-        ...data,
-        onboarding: {
-          ...data.onboarding,
-          userProfile: profile
-        },
-        preferences
-      })
-    }
+    // Note: preferences are handled locally for now since they're not in the UserData interface
     setIsSaved(true)
     setTimeout(() => setIsSaved(false), 2000)
   }
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
+    <PageLayout
+      title="Settings"
+      description="Manage your account preferences and customize your wellness experience to fit your needs."
+      icon={<Settings className="h-8 w-8 md:h-10 md:w-10 text-primary" />}
+      actions={
+        <AnimatedButton 
+          onClick={handleSave} 
+          className="gap-2 h-12 px-6 text-base font-medium"
+        >
+          {isSaved ? <Sparkles className="h-5 w-5" /> : <Save className="h-5 w-5" />}
+          {isSaved ? "Saved!" : "Save Changes"}
+        </AnimatedButton>
+      }
+      fullWidth={true}
+    >
+      <AnimatedPage>
+        <div className="grid gap-6 lg:gap-8 xl:gap-10 grid-cols-1 xl:grid-cols-3">
+          {/* Main Settings - Takes 2/3 width on larger screens */}
+          <div className="xl:col-span-2 space-y-6 lg:space-y-8">
+            {/* Profile Information */}
+            <AnimatedWrapper variant="slideInLeft">
+              <EnhancedCard
+                title="Profile Information"
+                description="Update your personal information and preferences."
+                icon={User}
+                gradient={true}
+              >
+                <div className="space-y-6">
+                  <div>
+                    <Label htmlFor="name" className="text-base font-medium">Full Name</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={profile.name}
+                      onChange={(e) => handleProfileChange('name', e.target.value)}
+                      placeholder="Enter your full name"
+                      className="mt-2 h-12 text-base"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="email" className="text-base font-medium">Email Address</Label>
+                    <Input
+                      id="email"
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => handleProfileChange('email', e.target.value)}
+                      placeholder="Enter your email address"
+                      className="mt-2 h-12 text-base"
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="university" className="text-base font-medium">University/Institution</Label>
+                    <Input
+                      id="university"
+                      type="text"
+                      value={profile.university}
+                      onChange={(e) => handleProfileChange('university', e.target.value)}
+                      placeholder="Enter your university or institution"
+                      className="mt-2 h-12 text-base"
+                    />
+                  </div>
+                </div>
+              </EnhancedCard>
+            </AnimatedWrapper>
 
-      <main className="flex-1 overflow-auto">
-        <div className="container p-6 space-y-6 max-w-7xl h-full flex flex-col">
-          {/* Header */}
-          <div className="space-y-2">
-            <h1 className="text-3xl font-bold text-balance">Settings</h1>
-            <p className="text-muted-foreground text-pretty">
-              Manage your account preferences and customize your wellness experience.
-            </p>
+            {/* Notification Preferences */}
+            <AnimatedWrapper variant="slideInLeft" delay={0.1}>
+              <EnhancedCard
+                title="Notification Preferences"
+                description="Manage how and when you receive notifications."
+                icon={Bell}
+              >
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-base font-medium">Push Notifications</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Receive reminders and updates</p>
+                    <Switch
+                      checked={preferences.notifications}
+                      onCheckedChange={(checked) => setPreferences((prev: Preferences) => ({ ...prev, notifications: checked }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-base font-medium">Email Updates</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Get weekly wellness insights and tips</p>
+                    <Switch
+                      checked={preferences.emailUpdates}
+                      onCheckedChange={(checked) => setPreferences((prev: Preferences) => ({ ...prev, emailUpdates: checked }))}
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-base font-medium">Privacy Mode</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Keep your data private and anonymous</p>
+                    <Switch
+                      checked={preferences.privacy === 'private'}
+                      onCheckedChange={(checked) => setPreferences((prev: Preferences) => ({ ...prev, privacy: checked ? 'private' : 'anonymous' }))}
+                    />
+                  </div>
+                </div>
+              </EnhancedCard>
+            </AnimatedWrapper>
           </div>
 
-          {/* Main Content Grid - Takes most of the space */}
-          <div className="flex-1 grid gap-6 lg:grid-cols-4 xl:grid-cols-5">
-            {/* Profile Section - Takes 2/3 width */}
-            <div className="lg:col-span-3 xl:col-span-3 space-y-6">
-              <Card className="h-fit">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <User className="h-5 w-5 text-primary" />
-                    Profile Information
-                  </CardTitle>
-                  <CardDescription>Update your personal information and profile settings.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-6">
-                  {/* Profile Photo - Coming Soon */}
-                  <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                    <div className="h-16 w-16 bg-primary/10 rounded-full flex items-center justify-center">
-                      <User className="h-8 w-8 text-primary" />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold">{profile.name || "Student"}</h3>
-                      <p className="text-sm text-muted-foreground">Profile photo coming soon</p>
-                    </div>
+          {/* Sidebar - Takes 1/3 width on larger screens */}
+          <div className="xl:col-span-1 space-y-6 lg:space-y-8">
+            {/* Theme Preferences */}
+            <AnimatedWrapper variant="slideInRight">
+              <EnhancedCard
+                title="Appearance"
+                description="Customize how the app looks and feels."
+                icon={Palette}
+              >
+                <div className="space-y-6">
+                  <div>
+                    <Label className="text-base font-medium">Theme</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Choose between light and dark mode</p>
+                    <ThemeToggle />
                   </div>
-
-                  <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        value={profile.name}
-                        onChange={(e) => handleProfileChange("name", e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        value={profile.email}
-                        onChange={(e) => handleProfileChange("email", e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="university">University</Label>
-                      <Input
-                        id="university"
-                        placeholder="Enter your university"
-                        value={profile.university || ""}
-                        onChange={(e) => handleProfileChange("university", e.target.value)}
-                      />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Notification Settings */}
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bell className="h-5 w-5 text-primary" />
-                    Notification Preferences
-                  </CardTitle>
-                  <CardDescription>Choose what reminders and updates you'd like to receive.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Enable Notifications</Label>
-                        <p className="text-sm text-muted-foreground">Get reminders for wellness activities</p>
+                  
+                  <div className="border-t pt-6">
+                    <Label className="text-base font-medium">{t('language') || 'Language'}</Label>
+                    <p className="text-sm text-muted-foreground mb-3">Select your preferred language / अपनी पसंदीदा भाषा चुनें / آپ کی پسندیدہ زبان منتخب کریں</p>
+                    <div className="space-y-4">
+                      <div className="p-4 bg-muted rounded-lg">
+                        <p className="text-sm font-medium mb-2">Translation Test:</p>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm">
+                          <div>Welcome: {t('welcome') || 'Welcome!'}</div>
+                          <div>Settings: {t('settings') || 'Settings'}</div>
+                          <div>Dashboard: {t('dashboard') || 'Dashboard'}</div>
+                          <div>Language: {t('language') || 'Language'}</div>
+                          <div>Help: {t('help') || 'Help'}</div>
+                          <div>Support: {t('support') || 'Support'}</div>
+                        </div>
                       </div>
-                      <Switch
-                        checked={preferences.notifications || false}
-                        onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, notifications: checked }))}
-                      />
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Privacy Mode</Label>
-                        <p className="text-sm text-muted-foreground">Keep your data private and anonymous</p>
+                      <LanguageSelector />
+                      <div className="text-xs text-muted-foreground">
+                        <p>💡 Tip: After selecting a language, the page will reload to apply changes.</p>
+                        <p>🌐 Special support for right-to-left languages like Kashmiri (کٲشُر) and Urdu (اردو)</p>
                       </div>
-                      <Switch
-                        checked={preferences.privacy === 'private'}
-                        onCheckedChange={(checked) => setPreferences(prev => ({ ...prev, privacy: checked ? 'private' : 'anonymous' }))}
-                      />
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
+              </EnhancedCard>
+            </AnimatedWrapper>
 
-            {/* Right Sidebar - Takes 1/3 width */}
-            <div className="lg:col-span-1 xl:col-span-2 space-y-6">
-              {/* Theme Preferences */}
-              <Card className="h-fit">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Palette className="h-5 w-5 text-primary" />
-                    Appearance
-                  </CardTitle>
-                  <CardDescription>Customize how the app looks and feels.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div>
-                      <Label className="text-sm font-medium">Theme</Label>
-                      <p className="text-xs text-muted-foreground mb-3">Choose between light and dark mode</p>
-                      <ThemeToggle />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* AI Customization Placeholder */}
-              <Card className="border-dashed h-fit">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Bot className="h-5 w-5 text-muted-foreground" />
-                    AI Personalization
-                    <span className="ml-auto text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
+            {/* AI Customization Placeholder */}
+            <AnimatedWrapper variant="slideInRight" delay={0.1}>
+              <EnhancedCard
+                title="AI Personalization"
+                description="Customize your AI mood coach's personality and focus areas."
+                icon={Bot}
+                className="border-dashed"
+              >
+                <div className="relative">
+                  <div className="absolute top-2 right-2">
+                    <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">
                       Coming Soon
                     </span>
-                  </CardTitle>
-                  <CardDescription>Customize your AI mood coach's personality and focus areas.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="flex items-center justify-center p-6 bg-muted/30 rounded-lg border-dashed border-2">
-                    <div className="text-center space-y-2">
-                      <Sparkles className="h-8 w-8 text-muted-foreground mx-auto" />
-                      <p className="text-sm text-muted-foreground">
+                  </div>
+                  <div className="flex items-center justify-center p-8 bg-muted/30 rounded-lg border-dashed border-2">
+                    <div className="text-center space-y-3">
+                      <Sparkles className="h-10 w-10 text-muted-foreground mx-auto" />
+                      <p className="text-sm text-muted-foreground max-w-xs">
                         Personalize your AI assistant's tone, focus areas, and coaching style
                       </p>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Save Button */}
-              <Button onClick={handleSave} disabled={isSaved} className="w-full">
-                {isSaved ? (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Settings Saved!
-                  </>
-                ) : (
-                  <>
-                    <Save className="h-4 w-4 mr-2" />
-                    Save Changes
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Account Management - Full width at bottom */}
-          <div className="mt-6">
-            <LogoutCard />
+                </div>
+              </EnhancedCard>
+            </AnimatedWrapper>
           </div>
         </div>
-      </main>
-    </div>
+
+        {/* Account Management - Full width at bottom */}
+        <AnimatedWrapper variant="itemVariants" delay={0.2} className="mt-6">
+          <LogoutCard />
+        </AnimatedWrapper>
+      </AnimatedPage>
+    </PageLayout>
   )
 }

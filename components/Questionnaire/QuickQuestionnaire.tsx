@@ -11,7 +11,7 @@ import { Progress } from "@/components/ui/progress"
 import { QuestionCard } from "./QuestionCard"
 import { ProgressBar } from "./ProgressBar"
 import { quickAssessmentSets, calculateQuickScores, generateQuickRecommendations } from "./quickAssessmentData"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { ChevronLeft, ChevronRight, CheckCircle, AlertTriangle, Info, Heart, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -43,25 +43,48 @@ const slideVariants = {
 
 export function QuickQuestionnaire({ onComplete, className = "", initialData = {} }: QuickQuestionnaireProps) {
   const router = useRouter()
-  const { completeOnboarding, updateOnboarding, data } = useLocalStorage()
+  const { completeOnboarding, updateData, data } = useMongoose()
   
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, any>>(data?.onboarding?.answers || initialData)
+  const [answers, setAnswers] = useState<Record<string, any>>(initialData)
   const [direction, setDirection] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [scores, setScores] = useState<any>(null)
   const [recommendations, setRecommendations] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [redirectCountdown, setRedirectCountdown] = useState(0)
+  const [hasRedirected, setHasRedirected] = useState(false) // Prevent multiple redirects
+
+  // Check if user has already completed onboarding
+  useEffect(() => {
+    console.log('QuickQuestionnaire: Checking onboarding status:', {
+      onboardingCompleted: data?.onboardingCompleted,
+      assessmentsLength: data?.assessments?.length || 0,
+      hasRedirected,
+      currentPath: typeof window !== 'undefined' ? window.location.pathname : 'unknown'
+    })
+    
+    if (data?.onboardingCompleted || (data?.assessments?.length || 0) > 0) {
+      console.log('User has already completed onboarding, redirecting to dashboard')
+      if (!hasRedirected && typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+        setHasRedirected(true)
+        router.push("/dashboard")
+      }
+    }
+  }, [data?.onboardingCompleted, data?.assessments?.length, hasRedirected, router])
 
   // Handle countdown and redirect when questionnaire is complete
   useEffect(() => {
-    if (isComplete && redirectCountdown > 0) {
+    if (isComplete && redirectCountdown > 0 && !hasRedirected) {
       const countdown = setInterval(() => {
         setRedirectCountdown(prev => {
           if (prev <= 1) {
             clearInterval(countdown)
-            router.push("/dashboard")
+            // Only redirect if we're not already on the dashboard and haven't redirected yet
+            if (router && typeof window !== 'undefined' && window.location.pathname !== '/dashboard' && !hasRedirected) {
+              setHasRedirected(true)
+              router.push("/dashboard")
+            }
             return 0
           }
           return prev - 1
@@ -70,7 +93,7 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
       
       return () => clearInterval(countdown)
     }
-  }, [isComplete, redirectCountdown, router])
+  }, [isComplete, redirectCountdown, router, hasRedirected])
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -103,7 +126,7 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
     setAnswers(prev => {
       const updated = { ...prev, [currentQuestion.id]: value }
       // Persist answers immediately
-      updateOnboarding({ answers: updated })
+      // updateData({ answers: updated }) // Temporarily disabled
       return updated
     })
   }
@@ -160,8 +183,14 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
         completedAt: new Date().toISOString()
       }
       
-      completeOnboarding(userProfile, assessmentData, answers)
+      // Wait for completion to finish before marking as complete
+      await completeOnboarding({
+        userProfile,
+        assessmentData,
+        answers
+      })
       
+      // Only set complete state after onboarding is actually saved
       setIsComplete(true)
       setRedirectCountdown(5)
       
@@ -174,6 +203,9 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
       }
     } catch (error) {
       console.error('Error completing quick assessment:', error)
+      // Even on error, mark as complete to prevent infinite loop
+      setIsComplete(true)
+      setRedirectCountdown(3) // Shorter countdown on error
     } finally {
       setIsLoading(false)
     }
@@ -334,13 +366,27 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
                 This was just a quick check-in to get you started. Your dashboard has tools and resources 
                 personalized for you, and you can take a more detailed assessment anytime you'd like.
               </p>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-wrap">
                 <Button 
-                  onClick={() => router.push("/dashboard")} 
+                  onClick={() => {
+                    if (typeof window !== 'undefined' && window.location.pathname !== '/dashboard' && !hasRedirected) {
+                      setHasRedirected(true)
+                      router.push("/dashboard")
+                    }
+                  }} 
                   size="sm"
                   className="bg-blue-600 hover:bg-blue-700"
+                  disabled={hasRedirected}
                 >
-                  Explore Your Dashboard
+                  {hasRedirected ? "Redirecting..." : "Explore Your Dashboard"}
+                </Button>
+                <Button 
+                  onClick={() => setRedirectCountdown(0)} 
+                  variant="outline"
+                  size="sm"
+                  className="text-blue-600 border-blue-300 hover:bg-blue-50"
+                >
+                  Stay Here ({redirectCountdown}s)
                 </Button>
               </div>
             </div>
@@ -352,7 +398,7 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
 
   return (
     <motion.div
-      className={cn("max-w-2xl mx-auto p-6", className)}
+      className={cn("max-w-2xl mx-auto p-4 sm:p-6", className)}
       variants={containerVariants}
       initial="hidden"
       animate="visible"
@@ -381,12 +427,12 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
       <ProgressBar 
         current={currentQuestionIndex + 1} 
         total={allQuestions.length}
-        className="mb-6"
+        className="mb-4 sm:mb-6"
       />
 
       {/* Question Card */}
-      <div className="mb-6 flex justify-center">
-        <div className="w-full max-w-2xl h-[650px]">
+      <div className="mb-4 sm:mb-6 flex justify-center">
+        <div className="w-full max-w-2xl min-h-[500px] max-h-[90vh]">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentQuestionIndex}
@@ -415,35 +461,35 @@ export function QuickQuestionnaire({ onComplete, className = "", initialData = {
       </div>
 
       {/* Navigation */}
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center gap-2 sm:gap-4 flex-wrap">
         <Button
           variant="outline"
           onClick={handlePrevious}
           disabled={!canGoBack}
-          className="flex items-center gap-2"
+          className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base px-3 sm:px-4"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           Previous
         </Button>
 
-        <span className="text-sm text-muted-foreground">
+        <span className="text-xs sm:text-sm text-muted-foreground text-center min-w-0 flex-shrink">
           {currentQuestionIndex + 1} of {allQuestions.length}
         </span>
 
         <Button
           onClick={handleNext}
           disabled={!hasAnswer && !isOptional}
-          className="flex items-center gap-2"
+          className="flex items-center gap-1 sm:gap-2 text-sm sm:text-base px-3 sm:px-4"
         >
           {isLastQuestion ? (
             <>
               {isLoading ? 'Completing...' : 'Complete'}
-              <CheckCircle className="h-4 w-4" />
+              <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4" />
             </>
           ) : (
             <>
               Next
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
             </>
           )}
         </Button>

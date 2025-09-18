@@ -10,7 +10,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { Calendar, Clock, Shield, User, Phone, Mail, AlertTriangle } from "lucide-react"
 import { motion } from "framer-motion"
 
@@ -57,7 +57,7 @@ const counselors = [
 const timeSlots = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00"]
 
 export default function BookingPage() {
-  const { data, updateData } = useLocalStorage()
+  const { data, updateData } = useMongoose()
   const [appointments, setAppointments] = useState<Appointment[]>([])
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [selectedCounselor, setSelectedCounselor] = useState("")
@@ -70,19 +70,12 @@ export default function BookingPage() {
   const [studentEmail, setStudentEmail] = useState("")
   const [studentPhone, setStudentPhone] = useState("")
 
-  useEffect(() => {
-    // Load existing appointments from localStorage
-    const savedAppointments = localStorage.getItem("appointments")
-    if (savedAppointments) {
-      setAppointments(JSON.parse(savedAppointments))
+    useEffect(() => {
+    if (!isAnonymous && data?.name) {
+      setStudentName(data.name || "")
+      setStudentEmail(data.email || "")
     }
-
-    // Pre-fill form with user data if not anonymous
-    if (!isAnonymous && data.onboarding?.userProfile) {
-      setStudentName(data.onboarding.userProfile.name || "")
-      setStudentEmail(data.onboarding.userProfile.email || "")
-    }
-  }, [isAnonymous, data.onboarding?.userProfile])
+  }, [isAnonymous, data?.name, data?.email])
 
   const saveAppointments = (newAppointments: Appointment[]) => {
     setAppointments(newAppointments)
@@ -144,7 +137,7 @@ export default function BookingPage() {
   }
 
   const userAppointments = appointments.filter((apt) =>
-    isAnonymous ? apt.isAnonymous : apt.studentEmail === data.onboarding?.userProfile?.email,
+    isAnonymous ? apt.isAnonymous : apt.studentEmail === data?.email,
   )
 
   return (

@@ -1,19 +1,21 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { GeistSans } from "geist/font/sans"
-import { GeistMono } from "geist/font/mono"
-import { Analytics } from "@vercel/analytics/next"
+import { Inter } from "next/font/google"
 import { Suspense } from "react"
 import { ThemeProvider } from "@/components/theme-provider"
-import { LocalStorageProvider } from "@/components/local-storage-provider"
+import { MongooseProvider } from "@/components/mongoose-provider"
+import { TranslationProvider } from "@/components/translation-provider"
 import { OnboardingCheck } from "@/components/onboarding-check"
+import AuthProvider from "@/components/auth-provider"
+import { UserFlowProvider } from "@/components/user-flow-provider"
 import "./globals.css"
+
+const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "MindfulU - Student Wellness Companion",
   description:
     "Your personal wellness companion for student life. Track moods, journal thoughts, and discover mental health tools.",
-  generator: "v0.app",
 }
 
 export default function RootLayout({
@@ -23,15 +25,21 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`font-sans ${GeistSans.variable} ${GeistMono.variable} antialiased`}>
-        <ThemeProvider defaultTheme="light" storageKey="mindfulU-theme">
-          <LocalStorageProvider>
-            <OnboardingCheck>
-              <Suspense fallback={null}>{children}</Suspense>
-            </OnboardingCheck>
-          </LocalStorageProvider>
-        </ThemeProvider>
-        <Analytics />
+      <body className={`${inter.className} antialiased`}>
+        <AuthProvider>
+          <TranslationProvider>
+            <ThemeProvider defaultTheme="light" storageKey="mindfulU-theme">
+              <MongooseProvider>
+                <UserFlowProvider>
+                  <OnboardingCheck>
+                    {/* <CriticalResourcePreloader /> */}
+                    <Suspense fallback={null}>{children}</Suspense>
+                  </OnboardingCheck>
+                </UserFlowProvider>
+              </MongooseProvider>
+            </ThemeProvider>
+          </TranslationProvider>
+        </AuthProvider>
       </body>
     </html>
   )

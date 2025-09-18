@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { useSession } from "next-auth/react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -16,7 +17,7 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar, Save } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 
 interface JournalModalProps {
   open: boolean
@@ -33,7 +34,8 @@ const moods = [
 ]
 
 export function JournalModal({ open, onOpenChange }: JournalModalProps) {
-  const { addJournalEntry } = useLocalStorage()
+  const { data: session } = useSession()
+  const { addJournalEntry } = useMongoose()
   const [title, setTitle] = useState("")
   const [content, setContent] = useState("")
   const [mood, setMood] = useState("")
@@ -53,8 +55,8 @@ export function JournalModal({ open, onOpenChange }: JournalModalProps) {
     setIsSaving(true)
 
     const entry = {
-      title: title.trim(),
-      content: content.trim(),
+      title,
+      content,
       mood,
       tags: tags
         .split(",")
@@ -63,7 +65,13 @@ export function JournalModal({ open, onOpenChange }: JournalModalProps) {
       date: new Date().toISOString(),
     }
 
-    addJournalEntry(entry)
+    // Save using MongooseProvider (which handles both local state and database)
+    try {
+      await addJournalEntry(entry)
+      console.log('Journal entry saved successfully')
+    } catch (error) {
+      console.error('Error saving journal entry:', error)
+    }
 
     // Reset form
     setTitle("")

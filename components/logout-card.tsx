@@ -3,11 +3,11 @@
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { AlertTriangle, LogOut } from "lucide-react"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { useState } from "react"
 
 export function LogoutCard() {
-  const { logout, data } = useLocalStorage()
+  const { logout, data } = useMongoose()
   const [isLoggingOut, setIsLoggingOut] = useState(false)
   
   const handleLogout = async () => {
@@ -16,7 +16,7 @@ export function LogoutCard() {
     logout()
   }
 
-  const userName = data?.onboarding?.userProfile?.name || "User"
+  const userName = data?.name || "User"
   
   return (
     <Card className="border-destructive/20 w-full">

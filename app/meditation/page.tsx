@@ -4,9 +4,11 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Play, Pause, RotateCcw, ArrowLeft } from "lucide-react"
+import { Play, Pause, RotateCcw, ArrowLeft, Flower2 } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import { PageLayout } from "@/components/page-layout"
+import { EnhancedCard } from "@/components/enhanced-card"
 
 const meditations = [
   { id: 1, title: "Stress Relief", duration: 300, description: "Release tension and find calm" },
@@ -67,47 +69,60 @@ export default function MeditationPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
+    <PageLayout
+      title="Guided Meditation"
+      description="Mindful meditation sessions to reduce stress and improve focus"
+      icon={<Flower2 />}
+      actions={
         <Link href="/dashboard">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold">Guided Meditation</h1>
-      </div>
-
+      }
+    >
       <AnimatePresence mode="wait">
         {!selectedMeditation ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="grid gap-4 md:grid-cols-2"
+            className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
           >
             {meditations.map((meditation) => (
               <motion.div key={meditation.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Card
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                <EnhancedCard
+                  title={meditation.title}
+                  description={meditation.description}
+                  className="h-full"
                   onClick={() => startMeditation(meditation)}
                 >
-                  <CardHeader>
-                    <CardTitle className="flex items-center justify-between">
-                      {meditation.title}
-                      <span className="text-sm font-normal text-muted-foreground">
-                        {Math.floor(meditation.duration / 60)} min
-                      </span>
-                    </CardTitle>
-                    <CardDescription>{meditation.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <Button className="w-full">
-                      <Play className="h-4 w-4 mr-2" />
-                      Start Session
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-3xl font-bold text-primary">
+                          {Math.floor(meditation.duration / 60)}
+                        </div>
+                        <div className="text-sm text-muted-foreground">minutes</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-sm text-muted-foreground">
+                          Perfect for
+                        </div>
+                        <div className="text-base font-medium">
+                          {meditation.id === 1 ? "Stress Relief" : 
+                           meditation.id === 2 ? "Focus" :
+                           meditation.id === 3 ? "Sleep" : "Quick Reset"}
+                        </div>
+                      </div>
+                    </div>
+                    <Button className="w-full h-12 text-base">
+                      <Play className="h-5 w-5 mr-2" />
+                      Start Meditation
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </EnhancedCard>
               </motion.div>
             ))}
           </motion.div>
@@ -118,7 +133,7 @@ export default function MeditationPage() {
             exit={{ opacity: 0, scale: 0.9 }}
             className="max-w-md mx-auto"
           >
-            <Card>
+            <Card className="bg-background/60 backdrop-blur-sm border-2 border-border/50 hover:border-primary/30 shadow-lg transition-all duration-300">
               <CardHeader className="text-center">
                 <CardTitle>{selectedMeditation.title}</CardTitle>
                 <CardDescription>{selectedMeditation.description}</CardDescription>
@@ -132,7 +147,7 @@ export default function MeditationPage() {
                   >
                     <div className="text-2xl font-mono font-bold">{formatTime(timeLeft)}</div>
                   </motion.div>
-                  <Progress value={progress} className="w-full" />
+                  <Progress value={progress} className="w-full h-3" />
                 </div>
 
                 <div className="flex justify-center gap-4">
@@ -145,13 +160,13 @@ export default function MeditationPage() {
                 </div>
 
                 <Button variant="ghost" className="w-full" onClick={() => setSelectedMeditation(null)}>
-                  Choose Different Session
+                  Choose Different Meditation
                 </Button>
               </CardContent>
             </Card>
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </PageLayout>
   )
 }

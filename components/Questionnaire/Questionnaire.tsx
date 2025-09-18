@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
+import { useSession } from "next-auth/react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -11,7 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { QuestionCard } from "./QuestionCard"
 import { ProgressBar } from "./ProgressBar"
 import { questionSets, calculateScores, generateRecommendations } from "./questionData"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { ChevronLeft, ChevronRight, CheckCircle, AlertTriangle, Info, Heart } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -42,26 +43,31 @@ const slideVariants = {
 
 export function Questionnaire({ onComplete, className = "", initialData = {} }: QuestionnaireProps) {
   const router = useRouter()
-  const { completeOnboarding, updateOnboarding, data } = useLocalStorage()
+  const { data: session } = useSession()
+  const { completeOnboarding, updateData, data } = useMongoose()
   // ...existing state declarations...
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
-  const [answers, setAnswers] = useState<Record<string, any>>(data?.onboarding?.answers || initialData)
+  const [answers, setAnswers] = useState<Record<string, any>>(initialData)
   const [direction, setDirection] = useState(0)
   const [isComplete, setIsComplete] = useState(false)
   const [scores, setScores] = useState<any>(null)
   const [recommendations, setRecommendations] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [redirectCountdown, setRedirectCountdown] = useState(0)
+  const [hasRedirected, setHasRedirected] = useState(false) // Prevent multiple redirects
 
   // Handle countdown and redirect when questionnaire is complete
   useEffect(() => {
-    if (isComplete && redirectCountdown > 0) {
+    if (isComplete && redirectCountdown > 0 && !hasRedirected) {
       const countdown = setInterval(() => {
         setRedirectCountdown(prev => {
           if (prev <= 1) {
             clearInterval(countdown)
-            console.log('Auto-redirecting to dashboard...')
-            router.push("/dashboard")
+            if (!hasRedirected && typeof window !== 'undefined' && window.location.pathname !== '/dashboard') {
+              setHasRedirected(true)
+              console.log('Auto-redirecting to dashboard...')
+              router.push("/dashboard")
+            }
             return 0
           }
           return prev - 1
@@ -70,7 +76,7 @@ export function Questionnaire({ onComplete, className = "", initialData = {} }: 
       
       return () => clearInterval(countdown)
     }
-  }, [isComplete, redirectCountdown, router])
+  }, [isComplete, redirectCountdown, router, hasRedirected])
 
 
 
@@ -124,7 +130,7 @@ const containerVariants = {
       setAnswers(prev => {
         const updated = { ...prev, [currentQuestion.id]: value }
     // Persist answers immediately
-    updateOnboarding({ answers: updated })
+    // updateData({ answers: updated }) // Temporarily disabled
         return updated
       })
   }
@@ -162,8 +168,8 @@ const containerVariants = {
       // Extract user profile from student questions
       const userProfile = {
         id: `user_${Date.now()}`,
-        name: answers['student_name'] || 'Student',
-        email: answers['student_email'] || '',
+        name: answers['student_name'] || session?.user?.name || 'Student',
+        email: answers['student_email'] || session?.user?.email || '',
         university: answers['student_university'] || '',
         completedAt: new Date().toISOString()
       }
@@ -178,8 +184,42 @@ const containerVariants = {
         completedAt: new Date().toISOString()
       }
 
-      // Use the new complete onboarding method
-      completeOnboarding(userProfile, assessmentData, answers)
+      // Save to local storage
+      completeOnboarding({
+        userProfile,
+        assessmentData,
+        answers
+      })
+      
+      // Save to database if user is authenticated
+      if (session?.user) {
+        try {
+          const response = await fetch('/api/assessments', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phq9Score: assessmentData.phq9Score,
+              gad7Score: assessmentData.gad7Score,
+              pss10Score: assessmentData.pss10Score,
+              overallWellnessScore: assessmentData.overallWellnessScore,
+              riskLevel: assessmentData.riskLevel,
+              answers: JSON.stringify(answers),
+              recommendations: JSON.stringify(recs)
+            })
+          })
+
+          if (response.ok) {
+            console.log('Assessment saved to database successfully')
+          } else {
+            console.error('Failed to save assessment to database')
+          }
+        } catch (error) {
+          console.error('Error saving assessment to database:', error)
+          // Don't let database errors stop the flow - local storage is already saved
+        }
+      }
       
       // Mark as complete and start countdown
       setIsComplete(true)
@@ -390,13 +430,13 @@ const containerVariants = {
       variants={containerVariants}
       initial="hidden"
       animate="visible"
-      className={cn("max-w-3xl mx-auto p-6", className)}
+      className={cn("max-w-full sm:max-w-3xl mx-auto p-2 sm:p-4 md:p-6", className)}
     >
       {/* Progress Bar */}
       <motion.div
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="mb-8"
+        className="mb-4 sm:mb-6 md:mb-8"
       >
         <ProgressBar
           current={currentQuestionIndex + 1}
@@ -406,7 +446,7 @@ const containerVariants = {
       </motion.div>
 
       {/* Question Card */}
-      <div className="mb-8">
+      <div className="mb-4 sm:mb-6 md:mb-8">
         {currentQuestion && (
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -450,32 +490,32 @@ const containerVariants = {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
-        className="flex justify-between items-center"
+        className="flex justify-between items-center gap-2 sm:gap-4 flex-wrap"
       >
         <Button
           variant="outline"
           onClick={handlePrevious}
           disabled={!canGoBack}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base px-3 sm:px-4"
         >
-          <ChevronLeft className="h-4 w-4" />
+          <ChevronLeft className="h-3 w-3 sm:h-4 sm:w-4" />
           <span>Previous</span>
         </Button>
 
-        <div className="text-sm text-muted-foreground">
+        <div className="text-xs sm:text-sm text-muted-foreground text-center min-w-0 flex-shrink">
           {currentQuestionIndex + 1} of {allQuestions.length}
         </div>
 
         <Button
           onClick={handleNext}
           disabled={isLoading || (!hasAnswer && !isOptional)}
-          className="flex items-center space-x-2"
+          className="flex items-center space-x-1 sm:space-x-2 text-sm sm:text-base px-3 sm:px-4"
         >
           <span>{isLastQuestion ? "Complete" : "Next"}</span>
           {isLoading ? (
-            <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+            <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
           ) : (
-            <ChevronRight className="h-4 w-4" />
+            <ChevronRight className="h-3 w-3 sm:h-4 sm:w-4" />
           )}
         </Button>
       </motion.div>

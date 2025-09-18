@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { ArrowLeft, Calendar, Heart, Edit, Save, X } from "lucide-react"
 import { motion } from "framer-motion"
 import Link from "next/link"
@@ -26,7 +26,7 @@ const moodColors = {
 export default function JournalEntryPage() {
   const params = useParams()
   const router = useRouter()
-  const { data, updateJournalEntry } = useLocalStorage()
+  const { data, updateJournalEntry } = useMongoose()
   const [isEditing, setIsEditing] = useState(false)
   const [editedEntry, setEditedEntry] = useState({
     title: "",
@@ -34,14 +34,14 @@ export default function JournalEntryPage() {
     tags: [] as string[],
   })
 
-  const entry = data.journals.find((j) => j.id === params.id)
+  const entry = (data?.journalEntries || []).find((j) => j.id === params.id)
 
   useEffect(() => {
     if (entry) {
       setEditedEntry({
         title: entry.title,
         content: entry.content,
-        tags: entry.tags,
+        tags: entry.tags || [],
       })
     }
   }, [entry])
@@ -75,7 +75,7 @@ export default function JournalEntryPage() {
     setEditedEntry({
       title: entry.title,
       content: entry.content,
-      tags: entry.tags,
+      tags: entry.tags || [],
     })
     setIsEditing(false)
   }
@@ -145,7 +145,7 @@ export default function JournalEntryPage() {
                   <div className="flex items-center gap-4 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <Calendar className="h-4 w-4" />
-                      {new Date(entry.date).toLocaleDateString("en-US", {
+                      {new Date(entry.createdAt).toLocaleDateString("en-US", {
                         weekday: "long",
                         year: "numeric",
                         month: "long",
@@ -191,11 +191,11 @@ export default function JournalEntryPage() {
                     <div className="prose prose-sm max-w-none dark:prose-invert">
                       <p className="whitespace-pre-wrap leading-relaxed">{entry.content}</p>
                     </div>
-                    {entry.tags.length > 0 && (
+                    {(entry.tags || []).length > 0 && (
                       <div className="space-y-2">
                         <Label className="text-sm font-medium">Tags</Label>
                         <div className="flex flex-wrap gap-2">
-                          {entry.tags.map((tag) => (
+                          {(entry.tags || []).map((tag) => (
                             <Badge key={tag} variant="outline">
                               {tag}
                             </Badge>

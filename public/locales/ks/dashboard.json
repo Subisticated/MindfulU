@@ -1,0 +1,41 @@
+{
+  "title": "ڈیش بورڈ",
+  "welcome_message": "یہ آپ کا صحت کا ڈیش بورڈ ہے۔ اپنے آپ کو چیک کرنے کے لیے ایک لمحہ لیں۔",
+  "mood_tracker": {
+    "title": "موڈ ٹریکر",
+    "description": "اپنی روزانہ جذباتی حالت کو ٹریک کریں",
+    "log_mood": "آج کا موڈ لاگ کریں",
+    "how_feeling": "آج آپ کیسا محسوس کر رہے ہیں؟",
+    "excellent": "بہترین",
+    "good": "اچھا",
+    "okay": "ٹھیک ہے",
+    "not_great": "اچھا نہیں",
+    "terrible": "خراب"
+  },
+  "journal": {
+    "title": "روزانہ ڈایری",
+    "description": "اپنے دن پر غور کریں اور اپنے خیالات کا اظہار کریں",
+    "write_entry": "آج کی ڈایری لکھیں",
+    "recent_entries": "حالیہ انٹریز",
+    "no_entries": "ابھی تک کوئی ڈایری انٹری نہیں",
+    "view_all": "تمام انٹریز دیکھیں"
+  },
+  "wellness_tools": {
+    "title": "صحت کے آلات",
+    "description": "صحت کی سرگرمیوں تک فوری رسائی",
+    "breathing_exercise": "سانس کی مشق",
+    "meditation": "مراقبہ",
+    "focus_timer": "فوکس ٹائمر"
+  },
+  "ai_assistant": {
+    "title": "AI صحت اسسٹنٹ",
+    "description": "ذاتی ذہنی صحت کی مدد حاصل کریں",
+    "chat_now": "ابھی چیٹ کریں",
+    "coming_soon": "جلد آ رہا ہے"
+  },
+  "wellness_insights": {
+    "title": "صحت کی بصیرت",
+    "description": "آپ کی پیش قدمی اور سفارشات",
+    "view_details": "تفصیلات دیکھیں"
+  }
+}

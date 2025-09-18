@@ -21,7 +21,8 @@ import {
   Smile
 } from "lucide-react"
 import { motion } from "framer-motion"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
+import { useTranslation } from "@/components/translation-provider"
 import Link from "next/link"
 
 const cardVariants = {
@@ -81,22 +82,23 @@ function getSeverityInfo(score: number, type: 'depression' | 'anxiety' | 'stress
 }
 
 export function WellnessInsights() {
-  const { data, personalizedRecommendations } = useLocalStorage()
-  const assessmentData = data?.onboarding?.assessmentData
-  const userProfile = data?.onboarding?.userProfile
+  const { data, personalizedRecommendations } = useMongoose()
+  const { t } = useTranslation()
+  const assessmentData = data?.assessments?.[0] // Get latest assessment
+  const userProfile = data // User profile is now directly in data
   
   if (!assessmentData) {
     return (
-      <Card className="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-blue-200 shadow-lg">
+      <Card className="bg-gradient-to-br from-background/80 via-primary/5 to-primary/10 backdrop-blur-sm border-2 border-primary/20 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <div className="flex h-16 w-16 items-center justify-center rounded-full bg-blue-100">
               <Heart className="h-8 w-8 text-blue-600" />
             </div>
           </div>
-          <CardTitle className="text-gray-800">Start Your Wellness Journey</CardTitle>
+          <CardTitle className="text-gray-800">{t("dashboard.wellness_insights.title")}</CardTitle>
           <CardDescription className="text-gray-600">
-            Take a quick wellness check-in to get personalized insights and supportive recommendations
+            {t("dashboard.wellness_insights.description")}
           </CardDescription>
         </CardHeader>
         <CardContent className="text-center">
@@ -182,7 +184,7 @@ export function WellnessInsights() {
       initial="hidden"
       animate="visible"
     >
-      <Card className="bg-gradient-to-br from-white via-blue-50/30 to-purple-50/30 border-blue-200 shadow-lg">
+      <Card className="bg-gradient-to-br from-background/80 via-primary/5 to-primary/10 backdrop-blur-sm border-2 border-primary/20 hover:border-primary/30 shadow-lg hover:shadow-xl transition-all duration-300">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-800">
             <Heart className="h-5 w-5 text-blue-600" />

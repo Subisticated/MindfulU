@@ -2,20 +2,20 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import { QuickQuestionnaire } from "@/components/Questionnaire/QuickQuestionnaire"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { useMongoose } from "@/components/mongoose-provider"
 import { Heart, Brain, Target } from "lucide-react"
 import { motion } from "framer-motion"
+import { LazyWrapper, PageLoadingSkeleton, LazyQuickQuestionnaire } from "@/lib/lazy-components"
 
 export default function OnboardingPage() {
   const router = useRouter()
-  const { data, updateData } = useLocalStorage()
+  const { data, updateData } = useMongoose()
   const [showWelcome, setShowWelcome] = useState(true)
   const [formData, setFormData] = useState({
-    name: data?.onboarding?.userProfile?.name || "",
-    email: data?.onboarding?.userProfile?.email || "",
+    name: data?.name || "",
+    email: data?.email || "",
   })
 
   const handleStartAssessment = () => {
@@ -168,18 +168,20 @@ export default function OnboardingPage() {
   }
 
   // Get persisted answers from localStorage
-  const initialAnswers = data?.onboarding?.answers || {}
+  const initialAnswers = {} // Empty for now, can be populated from stored data
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 flex items-center justify-center p-6">
-      <QuickQuestionnaire 
-        onComplete={handleQuestionnaireComplete}
-        initialData={{
-          ...initialAnswers,
-          student_name: formData.name,
-          student_email: formData.email,
-          student_university: ""
-        }}
-      />
+      <LazyWrapper fallback={<PageLoadingSkeleton />}>
+        <LazyQuickQuestionnaire 
+          onComplete={handleQuestionnaireComplete}
+          initialData={{
+            ...initialAnswers,
+            student_name: formData.name,
+            student_email: formData.email,
+            student_university: ""
+          }}
+        />
+      </LazyWrapper>
     </div>
   )
 }

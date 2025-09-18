@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, Play, Pause, RotateCcw } from "lucide-react"
+import { ArrowLeft, Play, Pause, RotateCcw, Wind } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import Link from "next/link"
+import { PageLayout } from "@/components/page-layout"
+import { EnhancedCard } from "@/components/enhanced-card"
 
 const breathingExercises = [
   { id: 1, name: "4-7-8 Technique", inhale: 4, hold: 7, exhale: 8, description: "Promotes relaxation and sleep" },
@@ -91,45 +93,56 @@ export default function BreathingPage() {
   }
 
   return (
-    <div className="container mx-auto p-6 max-w-4xl">
-      <div className="flex items-center gap-4 mb-6">
+    <PageLayout
+      title="Breathing Exercises"
+      description="Guided breathing techniques to help you relax, focus, and energize"
+      icon={<Wind />}
+      actions={
         <Link href="/dashboard">
           <Button variant="ghost" size="sm">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Back to Dashboard
           </Button>
         </Link>
-        <h1 className="text-3xl font-bold">Breathing Exercises</h1>
-      </div>
-
+      }
+    >
       <AnimatePresence mode="wait">
         {!selectedExercise ? (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="grid gap-4 md:grid-cols-2"
+            className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2"
           >
             {breathingExercises.map((exercise) => (
               <motion.div key={exercise.id} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                <Card
-                  className="cursor-pointer hover:shadow-md transition-shadow"
+                <EnhancedCard
+                  title={exercise.name}
+                  description={exercise.description}
+                  className="cursor-pointer h-full"
                   onClick={() => startExercise(exercise)}
                 >
-                  <CardHeader>
-                    <CardTitle>{exercise.name}</CardTitle>
-                    <CardDescription>{exercise.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="text-sm text-muted-foreground mb-4">
-                      Inhale {exercise.inhale}s • Hold {exercise.hold}s • Exhale {exercise.exhale}s
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between p-4 bg-muted/30 rounded-lg">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{exercise.inhale}s</div>
+                        <div className="text-xs text-muted-foreground">Inhale</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{exercise.hold}s</div>
+                        <div className="text-xs text-muted-foreground">Hold</div>
+                      </div>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-primary">{exercise.exhale}s</div>
+                        <div className="text-xs text-muted-foreground">Exhale</div>
+                      </div>
                     </div>
-                    <Button className="w-full">
-                      <Play className="h-4 w-4 mr-2" />
+                    <Button className="w-full h-12 text-base">
+                      <Play className="h-5 w-5 mr-2" />
                       Start Exercise
                     </Button>
-                  </CardContent>
-                </Card>
+                  </div>
+                </EnhancedCard>
               </motion.div>
             ))}
           </motion.div>
@@ -140,7 +153,7 @@ export default function BreathingPage() {
             exit={{ opacity: 0, scale: 0.9 }}
             className="max-w-md mx-auto"
           >
-            <Card>
+            <Card className="bg-background/60 backdrop-blur-sm border-2 border-border/50 hover:border-primary/30 shadow-lg transition-all duration-300">
               <CardHeader className="text-center">
                 <CardTitle>{selectedExercise.name}</CardTitle>
                 <CardDescription>Cycle {cycle + 1}</CardDescription>
@@ -185,6 +198,6 @@ export default function BreathingPage() {
           </motion.div>
         )}
       </AnimatePresence>
-    </div>
+    </PageLayout>
   )
 }

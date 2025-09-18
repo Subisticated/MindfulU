@@ -1,0 +1,41 @@
+{
+  "title": "Dashboard",
+  "welcome_message": "Here's your wellness dashboard. Take a moment to check in with yourself.",
+  "mood_tracker": {
+    "title": "Mood Tracker",
+    "description": "Track your daily emotional state",
+    "log_mood": "Log Today's Mood",
+    "how_feeling": "How are you feeling today?",
+    "excellent": "Excellent",
+    "good": "Good",
+    "okay": "Okay",
+    "not_great": "Not Great",
+    "terrible": "Terrible"
+  },
+  "journal": {
+    "title": "Daily Journal",
+    "description": "Reflect on your day and express your thoughts",
+    "write_entry": "Write Today's Journal",
+    "recent_entries": "Recent Entries",
+    "no_entries": "No journal entries yet",
+    "view_all": "View All Entries"
+  },
+  "wellness_tools": {
+    "title": "Wellness Tools",
+    "description": "Quick access to wellness activities",
+    "breathing_exercise": "Breathing Exercise",
+    "meditation": "Meditation",
+    "focus_timer": "Focus Timer"
+  },
+  "ai_assistant": {
+    "title": "AI Wellness Assistant",
+    "description": "Get personalized mental health support",
+    "chat_now": "Chat Now",
+    "coming_soon": "Coming Soon"
+  },
+  "wellness_insights": {
+    "title": "Wellness Insights",
+    "description": "Your progress and recommendations",
+    "view_details": "View Details"
+  }
+}

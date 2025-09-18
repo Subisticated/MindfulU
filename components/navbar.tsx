@@ -2,25 +2,34 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import { useSession, signOut } from "next-auth/react"
 import { Button } from "@/components/ui/button"
-import { Menu, X, Heart } from "lucide-react"
-import { useLocalStorage } from "@/components/local-storage-provider"
+import { 
+  DropdownMenu, 
+  DropdownMenuContent, 
+  DropdownMenuItem, 
+  DropdownMenuTrigger,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Menu, X, Heart, User, Settings, LogOut } from "lucide-react"
+import { useTranslation } from "@/components/translation-provider"
 
 export function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
-  const { isLoggedIn } = useLocalStorage()
+  const { data: session, status } = useSession()
+  const { t } = useTranslation()
+  const isLoggedIn = !!session
+  const isLoading = status === "loading"
 
   // Show different navigation based on login status
   const getNavButton = () => {
     if (isLoggedIn) {
-      return {
-        href: "/settings",
-        label: "Settings"
-      }
+      return null // We'll use a dropdown menu for logged-in users
     } else {
       return {
-        href: "/onboarding",
-        label: "Get Started"
+        href: "/auth/signin",
+        label: t("signin")
       }
     }
   }
@@ -29,11 +38,15 @@ export function Navbar() {
 
   // Navigation links - only show for logged-in users
   const navLinks = [
-    { href: "/dashboard", label: "Dashboard" },
-    { href: "/journal", label: "Journal" },
-    { href: "/meditation", label: "Wellness" },
-    { href: "/ai-assistant", label: "AI Coach" },
+    { href: "/dashboard", label: t("dashboard") },
+    { href: "/journal", label: t("journal") },
+    { href: "/meditation", label: t("wellness") },
+    { href: "/ai-assistant", label: t("ai_coach") },
   ]
+
+  const handleSignOut = () => {
+    signOut({ callbackUrl: "/" })
+  }
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -63,14 +76,63 @@ export function Navbar() {
 
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center space-x-4">
-          <Button size="sm" asChild>
-            <Link href={navButton.href}>{navButton.label}</Link>
-          </Button>
+          {isLoading ? (
+            <div className="w-8 h-8 rounded-full bg-gray-200 animate-pulse" />
+          ) : isLoggedIn ? (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
+                    <AvatarFallback>
+                      {session?.user?.name?.charAt(0).toUpperCase() || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56" align="end" forceMount>
+                <div className="flex items-center justify-start gap-2 p-2">
+                  <div className="flex flex-col space-y-1 leading-none">
+                    {session?.user?.name && (
+                      <p className="font-medium">{session.user.name}</p>
+                    )}
+                    {session?.user?.email && (
+                      <p className="w-[200px] truncate text-sm text-muted-foreground">
+                        {session.user.email}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem asChild>
+                  <Link href="/settings" className="cursor-pointer">
+                    <Settings className="mr-2 h-4 w-4" />
+                    {t("settings")}
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
+                  <LogOut className="mr-2 h-4 w-4" />
+                  {t("sign_out")}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          ) : (
+            <>
+              <Button variant="ghost" size="sm" asChild>
+                <Link href="/auth/signin">{t("signin")}</Link>
+              </Button>
+              <Button size="sm" asChild>
+                <Link href="/auth/signup">{t("signup")}</Link>
+              </Button>
+            </>
+          )}
         </div>
 
         {/* Mobile Menu Button */}
         <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsOpen(!isOpen)}>
           {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          <span className="sr-only">{isOpen ? t("close") : t("menu")}</span>
         </Button>
       </div>
 
@@ -88,9 +150,30 @@ export function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <Button size="sm" className="w-full mt-4" asChild>
-              <Link href={navButton.href} onClick={() => setIsOpen(false)}>{navButton.label}</Link>
-            </Button>
+            
+            {isLoggedIn ? (
+              <>
+                <Link
+                  href="/settings"
+                  className="block text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+                  onClick={() => setIsOpen(false)}
+                >
+                  {t("settings")}
+                </Link>
+                <Button variant="outline" size="sm" className="w-full mt-4" onClick={handleSignOut}>
+                  {t("sign_out")}
+                </Button>
+              </>
+            ) : (
+              <div className="space-y-2">
+                <Button variant="outline" size="sm" className="w-full" asChild>
+                  <Link href="/auth/signin" onClick={() => setIsOpen(false)}>{t("signin")}</Link>
+                </Button>
+                <Button size="sm" className="w-full" asChild>
+                  <Link href="/auth/signup" onClick={() => setIsOpen(false)}>{t("signup")}</Link>
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       )}
