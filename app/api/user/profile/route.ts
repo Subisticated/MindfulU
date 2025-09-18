@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import connectToDatabase from "@/lib/mongodb"
+import dbConnect from "@/lib/dbConnect"
 import { User, Assessment, JournalEntry, MoodEntry } from "@/lib/models"
 
 // Force dynamic rendering for this route
@@ -9,7 +9,7 @@ export const dynamic = 'force-dynamic'
 
 export async function GET(request: NextRequest) {
   try {
-    await connectToDatabase()
+    await dbConnect()
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {
@@ -102,7 +102,7 @@ export async function GET(request: NextRequest) {
 
 export async function PUT(request: NextRequest) {
   try {
-    await connectToDatabase()
+    await dbConnect()
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {

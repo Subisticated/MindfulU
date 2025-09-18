@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import connectToDatabase from "@/lib/mongodb"
+import dbConnect from "@/lib/dbConnect"
 import { User, JournalEntry } from "@/lib/models"
 
 export async function POST(request: NextRequest) {
   try {
-    await connectToDatabase()
+    await dbConnect()
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {
@@ -70,7 +70,7 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
-    await connectToDatabase()
+    await dbConnect()
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {
@@ -120,7 +120,7 @@ export async function GET(request: NextRequest) {
 
 export async function DELETE(request: NextRequest) {
   try {
-    await connectToDatabase()
+    await dbConnect()
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {

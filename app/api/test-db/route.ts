@@ -1,24 +1,22 @@
 import { NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
+import dbConnect from "@/lib/dbConnect"
+import mongoose from "mongoose"
 
 export async function GET() {
   try {
-    // Test basic database connection
-    const userCount = await prisma.user.count()
-    const assessmentCount = await prisma.assessment.count()
-    const journalCount = await prisma.journalEntry.count()
+    await dbConnect()
     
-    // Test creating a simple record
-    const testConnection = await prisma.$executeRaw`SELECT 1 as test`
+    // Test basic database connection
+    const collections = await mongoose.connection.db?.listCollections().toArray()
+    const dbName = mongoose.connection.db?.databaseName
     
     return NextResponse.json({
       status: "success",
-      message: "Database connection successful",
+      message: "MongoDB connection successful",
       data: {
-        userCount,
-        assessmentCount,
-        journalCount,
-        connectionTest: testConnection
+        database: dbName,
+        collections: collections?.map(c => c.name) || [],
+        connectionState: mongoose.connection.readyState, // 1 = connected
       }
     })
   } catch (error: any) {

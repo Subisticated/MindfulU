@@ -1,11 +1,14 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getServerSession } from "next-auth/next"
 import { authOptions } from "@/lib/auth"
-import connectToDatabase from "@/lib/mongodb"
-import { User, Assessment } from "@/lib/models"
+import dbConnect from "@/lib/dbConnect"
+import { User, Assessment, IAssessment } from "@/lib/models"
+import mongoose from "mongoose"
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect()
+    
     const session = await getServerSession(authOptions)
     
     if (!session?.user?.email) {
@@ -41,9 +44,6 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Connect to MongoDB
-    await connectToDatabase()
-
     // Find or create the user by email
     let user = await User.findOne({ email: session.user.email })
 
@@ -53,7 +53,6 @@ export async function POST(request: NextRequest) {
         email: session.user.email,
         name: session.user.name || '',
         university: '',
-        dateOfBirth: null,
       })
       console.log('Created new user:', user.email)
     }
@@ -72,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      assessmentId: assessment._id,
+      assessmentId: assessment._id.toString(),
       message: "Assessment saved successfully"
     })
 
@@ -96,9 +95,6 @@ export async function GET(request: NextRequest) {
       )
     }
 
-    // Connect to MongoDB
-    await connectToDatabase()
-
     // Find the user by email
     const user = await User.findOne({ email: session.user.email })
 
@@ -117,6 +113,7 @@ export async function GET(request: NextRequest) {
     // Parse JSON fields
     const parsedAssessments = assessments.map((assessment: any) => ({
       ...assessment.toObject(),
+      id: assessment._id.toString(),
       answers: JSON.parse(assessment.answers),
       recommendations: assessment.recommendations ? JSON.parse(assessment.recommendations) : null,
     }))

@@ -1,12 +1,14 @@
 import { NextAuthOptions } from "next-auth"
 import GoogleProvider from "next-auth/providers/google"
 import CredentialsProvider from "next-auth/providers/credentials"
-import { PrismaAdapter } from "@auth/prisma-adapter"
-import { prisma } from "@/lib/prisma"
+import { MongoDBAdapter } from "@next-auth/mongodb-adapter"
+import clientPromise from "@/lib/mongodb-auth"
 import bcrypt from "bcryptjs"
+import dbConnect from "@/lib/dbConnect"
+import { User } from "@/lib/models"
 
 export const authOptions: NextAuthOptions = {
-  adapter: PrismaAdapter(prisma) as any,
+  adapter: MongoDBAdapter(clientPromise),
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID || "",
@@ -23,10 +25,10 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        const user = await prisma.user.findUnique({
-          where: {
-            email: credentials.email
-          }
+        await dbConnect()
+
+        const user = await User.findOne({
+          email: credentials.email
         })
 
         if (!user || !user.password) {
@@ -43,7 +45,7 @@ export const authOptions: NextAuthOptions = {
         }
 
         return {
-          id: user.id,
+          id: (user as any)._id.toString(),
           email: user.email,
           name: user.name,
           image: user.image,

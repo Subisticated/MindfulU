@@ -1,7 +1,5 @@
 "use client"
 
-import { prisma } from '@/lib/prisma'
-
 // Types that match the local storage interface
 export interface UserProfile {
   id: string

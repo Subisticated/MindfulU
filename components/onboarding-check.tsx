@@ -46,7 +46,7 @@ export function OnboardingCheck({ children }: { children: React.ReactNode }) {
 
   // Show children if onboarding is completed or on allowed pages
   const hasCompletedOnboarding = data?.onboardingCompleted || (data?.assessments?.length || 0) > 0
-  const allowedPages = ["/onboarding", "/", "/settings", "/auth/signin", "/auth/signup"]
+  const allowedPages = ["/onboarding", "/", "/settings", "/auth/signin", "/auth/signup", "/ai-assistant"]
   const isStaticFile = pathname.startsWith("/_next/") || pathname.startsWith("/api/") || pathname.startsWith("/.well-known/") || pathname.includes("static/chunks") || pathname.endsWith(".js") || pathname.endsWith(".css") || pathname.endsWith(".json")
   const shouldShowContent = allowedPages.includes(pathname) || hasCompletedOnboarding === true || isStaticFile
   

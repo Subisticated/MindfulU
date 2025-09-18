@@ -1,9 +1,12 @@
 import { NextRequest, NextResponse } from "next/server"
-import { prisma } from "@/lib/prisma"
 import bcrypt from "bcryptjs"
+import dbConnect from "@/lib/dbConnect"
+import { User } from "@/lib/models"
 
 export async function POST(request: NextRequest) {
   try {
+    await dbConnect()
+    
     const { name, email, password, university } = await request.json()
 
     // Validate input
@@ -15,9 +18,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check if user already exists
-    const existingUser = await prisma.user.findUnique({
-      where: { email }
-    })
+    const existingUser = await User.findOne({ email })
 
     if (existingUser) {
       return NextResponse.json(
@@ -30,22 +31,21 @@ export async function POST(request: NextRequest) {
     const hashedPassword = await bcrypt.hash(password, 12)
 
     // Create user
-    const user = await prisma.user.create({
-      data: {
-        name,
-        email,
-        password: hashedPassword,
-        university: university || null,
-      }
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+      university: university || null,
     })
 
     // Return user without password
-    const { password: _, ...userWithoutPassword } = user
+    const userObject = user.toObject()
+    const { password: _, ...userWithoutPassword } = userObject
 
     return NextResponse.json(
       { 
         message: "User created successfully",
-        user: userWithoutPassword 
+        user: { ...userWithoutPassword, id: (user as any)._id.toString() }
       },
       { status: 201 }
     )
